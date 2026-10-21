@@ -11,6 +11,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <!-- SheetJS untuk Import/Export Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <style>
     * {
       margin: 0;
@@ -20,7 +23,7 @@
     }
 
     body {
-      background-color: #f8fafc;
+      background-color: #f1f5f9;
       color: #1e293b;
       min-height: 100vh;
       display: flex;
@@ -31,7 +34,7 @@
     header {
       background-color: #0d3b36;
       color: #ffffff;
-      padding: 12px 40px;
+      padding: 12px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -48,51 +51,103 @@
     }
 
     .brand img {
-      height: 48px;
+      height: 42px;
       width: auto;
     }
 
     .brand-text h1 {
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: 800;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       line-height: 1.2;
     }
 
     .brand-text p {
       font-size: 0.65rem;
       color: #94a3b8;
-      letter-spacing: 0.5px;
       font-weight: 600;
     }
 
-    nav {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    nav a, nav button {
-      color: #ffffff;
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: none;
-      border: none;
+    /* DROPDOWN PROFIL ADMIN */
+    .user-profile-menu {
+      position: relative;
       cursor: pointer;
-      opacity: 0.85;
-      transition: all 0.2s ease;
     }
 
-    nav a:hover, nav button:hover {
-      opacity: 1;
-      color: #6ee7b7;
+    .user-info-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 30px;
+      transition: background 0.2s;
     }
 
-    /* HERO CONTENT (UNTUK NON-LOGGED IN) */
+    .user-info-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: #34d399;
+      color: #0d3b36;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 110%;
+      right: 0;
+      background: #ffffff;
+      color: #1e293b;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+      width: 200px;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 200;
+    }
+
+    .dropdown-menu.show {
+      display: flex;
+    }
+
+    .dropdown-item {
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.2s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+      background: #f1f5f9;
+      color: #0d3b36;
+    }
+
+    .dropdown-item.text-danger:hover {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    /* LANDING PAGE (BEFORE LOGIN) */
     #landingSection {
       max-width: 1200px;
       margin: 0 auto;
@@ -108,9 +163,8 @@
     .hero-text h2 {
       font-size: 2.5rem;
       font-weight: 800;
-      color: #154d44;
-      line-height: 1.25;
-      margin-bottom: 5px;
+      color: #0d3b36;
+      line-height: 1.2;
       text-transform: uppercase;
     }
 
@@ -119,13 +173,6 @@
       color: #64748b;
       font-weight: 600;
       margin-top: 10px;
-      letter-spacing: 0.5px;
-    }
-
-    .action-card {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
     }
 
     .btn-login-admin {
@@ -137,27 +184,221 @@
       cursor: pointer;
       font-weight: 700;
       font-size: 0.95rem;
-      text-align: center;
-      letter-spacing: 0.5px;
       color: #0f172a;
       background-color: #fef3c7;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+      transition: all 0.2s;
     }
 
     .btn-login-admin:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
       background-color: #fde047;
     }
 
-    /* MODAL LOGIN */
+    /* MAIN DASHBOARD LAYOUT (WITH SIDEBAR) */
+    #dashboardWrapper {
+      display: none;
+      flex: 1;
+      min-height: calc(100vh - 66px);
+    }
+
+    .sidebar {
+      width: 260px;
+      background-color: #0d3b36;
+      color: #ffffff;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-menu-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 10px;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sidebar-menu-btn:hover, .sidebar-menu-btn.active {
+      background-color: #154d44;
+      color: #34d399;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 30px;
+      background-color: #f8fafc;
+      overflow-y: auto;
+    }
+
+    /* CARDS STATISTIK */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    .stat-icon.guru { background: #e0f2fe; color: #0284c7; }
+    .stat-icon.aktif { background: #dcfce7; color: #16a34a; }
+    .stat-icon.selesai { background: #f3e8ff; color: #9333ea; }
+
+    .stat-info h4 { font-size: 0.8rem; color: #64748b; font-weight: 600; }
+    .stat-info p { font-size: 1.5rem; color: #0f172a; font-weight: 800; }
+
+    /* CONTENT SECTIONS */
+    .content-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+    }
+
+    .card-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0d3b36;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* FORM STYLES */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: #0d3b36;
+    }
+
+    /* BUTTONS & BADGES */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: #0d3b36; color: #ffffff; }
+    .btn-primary:hover { background: #154d44; }
+    .btn-danger { background: #ef4444; color: #ffffff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-warning { background: #f59e0b; color: #ffffff; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-excel { background: #16a34a; color: #ffffff; }
+    .btn-excel:hover { background: #15803d; }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-secondary { background: #f1f5f9; color: #475569; }
+
+    /* TABLES */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 700;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* MODAL POPUP */
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.5);
       display: none;
       justify-content: center;
@@ -168,237 +409,36 @@
 
     .modal-card {
       background: #ffffff;
-      padding: 40px;
-      border-radius: 20px;
+      padding: 30px;
+      border-radius: 16px;
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      max-width: 420px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
       position: relative;
-    }
-
-    .modal-card h3 {
-      font-size: 1.5rem;
-      color: #0d3b36;
-      margin-bottom: 20px;
-      font-weight: 800;
-      text-align: center;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #334155;
-      margin-bottom: 8px;
-    }
-
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .form-group input:focus, .form-group select:focus {
-      border-color: #0d3b36;
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: 14px;
-      background-color: #0d3b36;
-      color: #ffffff;
-      border: none;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-submit:hover {
-      background-color: #154d44;
     }
 
     .close-modal {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      color: #64748b;
+      top: 15px; right: 15px;
+      background: none; border: none;
+      font-size: 1.2rem; color: #64748b;
       cursor: pointer;
     }
 
-    /* DASHBOARD LAYOUT */
-    #dashboardSection {
-      display: none;
-      flex: 1;
-      max-width: 1280px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 30px 20px;
-    }
-
-    .dashboard-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 25px;
-      background: #ffffff;
-      padding: 20px 30px;
-      border-radius: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .admin-profile {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .admin-avatar {
-      width: 48px;
-      height: 48px;
-      background: #e2e8f0;
-      color: #0d3b36;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1.2rem;
-    }
-
-    .dashboard-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 25px;
-      overflow-x: auto;
-      padding-bottom: 5px;
-    }
-
-    .tab-btn {
-      padding: 12px 20px;
-      border: none;
-      background: #ffffff;
-      color: #64748b;
-      font-weight: 700;
-      font-size: 0.9rem;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .tab-btn.active, .tab-btn:hover {
-      background: #0d3b36;
-      color: #ffffff;
-    }
-
-    .tab-content {
-      display: none;
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    /* TABLE DESIGN */
-    .table-container {
-      overflow-x: auto;
-      margin-top: 20px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    th, td {
-      padding: 14px 16px;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 0.9rem;
-    }
-
-    th {
-      background-color: #f1f5f9;
-      color: #334155;
-      font-weight: 700;
-    }
-
-    .badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .badge-success { background: #dcfce7; color: #166534; }
-    .badge-danger { background: #fee2e2; color: #991b1b; }
-
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 0.8rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .btn-danger { background: #ef4444; color: white; }
-    .btn-primary { background: #0d3b36; color: white; }
-
-    /* FOOTER */
     footer {
       background: linear-gradient(180deg, #ffffff 0%, #d1fae5 100%);
-      padding: 25px 20px 15px;
+      padding: 15px;
       text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
       margin-top: auto;
     }
 
-    footer img {
-      height: 36px;
-      width: auto;
-    }
-
-    footer p {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #334155;
-    }
+    footer img { height: 28px; }
+    footer p { font-size: 0.75rem; font-weight: 700; color: #334155; }
 
     @media (max-width: 768px) {
-      header { flex-direction: column; gap: 15px; padding: 15px 20px; }
-      #landingSection { grid-template-columns: 1fr; text-align: center; padding: 30px 20px; }
-      .action-card { align-items: center; }
-      .btn-login-admin { width: 100%; }
-      .dashboard-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+      #dashboardWrapper { flex-direction: column; }
+      .sidebar { width: 100%; }
+      #landingSection { grid-template-columns: 1fr; text-align: center; }
     }
   </style>
 </head>
@@ -410,162 +450,398 @@
       <img src="../Assets/mts.png" alt="Logo MTs Al Ishlah">
       <div class="brand-text">
         <h1>e - C B T</h1>
-        <p>UJIAN SEKOLAH - COMPUTER BASSED TEST MANDIRI</p>
+        <p>UJIAN SEKOLAH - COMPUTER BASED TEST MANDIRI</p>
       </div>
     </div>
+
+    <!-- GUEST NAV (SEBELUM LOGIN) -->
     <nav id="navGuest">
-      <a href="../index.html"><i class="fa-solid fa-house"></i> Beranda</a>
-      <a href="#" id="navLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+      <button class="btn btn-primary" id="openLoginModalNav"><i class="fa-solid fa-right-to-bracket"></i> Login Admin</button>
     </nav>
-    <nav id="navAdmin" style="display: none;">
-      <span style="font-size: 0.85rem; font-weight: 600;" id="welcomeMsg">Admin</span>
-      <button id="btnLogout"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
-    </nav>
+
+    <!-- ADMIN NAV (SAAT LOGIN) -->
+    <div id="navAdmin" class="user-profile-menu" style="display: none;">
+      <div class="user-info-btn" id="userMenuBtn">
+        <div class="user-avatar"><i class="fa-solid fa-user-shield"></i></div>
+        <span style="font-size: 0.85rem; font-weight: 700;" id="headerAdminName">Administrator</span>
+        <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+      </div>
+
+      <!-- DROPDOWN MENU -->
+      <div class="dropdown-menu" id="userDropdown">
+        <button class="dropdown-item" id="btnOpenProfilModal"><i class="fa-solid fa-user-gear"></i> Profil &amp; Password</button>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0;">
+        <button class="dropdown-item text-danger" id="btnLogout"><i class="fa-solid fa-right-from-bracket"></i> Keluar / Logout</button>
+      </div>
+    </div>
   </header>
 
-  <!-- LANDING PAGE (SAAT BELUM LOGIN) -->
+  <!-- LANDING PAGE (NON-LOGGED IN) -->
   <main id="landingSection">
     <div class="hero-text">
       <h2>Selamat Datang</h2>
       <h2>Admin di</h2>
       <h2>E-CBT AIP Cloud</h2>
-      <p>Aplikasi Ujian Sekolah Berbasis Komputer</p>
+      <p>Aplikasi Ujian Sekolah Berbasis Komputer MTs Al Ishlah Panambangan</p>
     </div>
 
-    <div class="action-card">
+    <div style="display: flex; justify-content: flex-end;">
       <button class="btn-login-admin" id="openModalBtn">
         <i class="fa-solid fa-lock"></i> KLIK UNTUK LOGIN ADMIN
       </button>
     </div>
   </main>
 
-  <!-- DASHBOARD ADMIN (SAAT SUDAH LOGIN) -->
-  <section id="dashboardSection">
-    <div class="dashboard-header">
-      <div class="admin-profile">
-        <div class="admin-avatar"><i class="fa-solid fa-user-gear"></i></div>
-        <div>
-          <h2 style="font-size: 1.3rem; color: #0d3b36;" id="dashAdminName">Administrator Utama</h2>
-          <p style="font-size: 0.85rem; color: #64748b;">Akses Kontrol &amp; Pengelolaan Data Ujian</p>
+  <!-- DASHBOARD UTAMA ADMIN (LOGGED IN) -->
+  <div id="dashboardWrapper">
+    <!-- SIDEBAR KIRI -->
+    <aside class="sidebar">
+      <button class="sidebar-menu-btn active" onclick="switchTab('beranda')">
+        <i class="fa-solid fa-house"></i> Beranda
+      </button>
+      <button class="sidebar-menu-btn" onclick="switchTab('siswa')">
+        <i class="fa-solid fa-users"></i> Data Siswa
+      </button>
+      <button class="sidebar-menu-btn" onclick="switchTab('guru')">
+        <i class="fa-solid fa-chalkboard-user"></i> Data Guru
+      </button>
+      <button class="sidebar-menu-btn" onclick="switchTab('mapel')">
+        <i class="fa-solid fa-book"></i> Mata Pelajaran
+      </button>
+      <button class="sidebar-menu-btn" onclick="switchTab('jadwal')">
+        <i class="fa-solid fa-calendar-days"></i> Jadwal &amp; Token
+      </button>
+      <button class="sidebar-menu-btn" onclick="switchTab('monitoring')">
+        <i class="fa-solid fa-desktop"></i> Pelaksanaan &amp; Monitoring
+      </button>
+    </aside>
+
+    <!-- AREA KONTEN UTAMA -->
+    <main class="main-content">
+
+      <!-- MODUL 1: BERANDA -->
+      <section id="tab-beranda" class="tab-pane">
+        <!-- CARDS RINGKASAN -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon guru"><i class="fa-solid fa-chalkboard-user"></i></div>
+            <div class="stat-info">
+              <h4>Total Data Guru</h4>
+              <p id="statTotalGuru">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon aktif"><i class="fa-solid fa-file-circle-check"></i></div>
+            <div class="stat-info">
+              <h4>Ujian Aktif</h4>
+              <p id="statUjianAktif">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon selesai"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div class="stat-info">
+              <h4>Ujian Selesai</h4>
+              <p id="statUjianSelesai">0</p>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- TABS NAVIGASI -->
-    <div class="dashboard-tabs">
-      <button class="tab-btn active" onclick="switchTab('siswa')"><i class="fa-solid fa-users"></i> Data Siswa</button>
-      <button class="tab-btn" onclick="switchTab('guru')"><i class="fa-solid fa-chalkboard-user"></i> Data Guru</button>
-      <button class="tab-btn" onclick="switchTab('mapel')"><i class="fa-solid fa-book"></i> Mata Pelajaran</button>
-      <button class="tab-btn" onclick="switchTab('jadwal')"><i class="fa-solid fa-calendar-days"></i> Jadwal &amp; Token</button>
-      <button class="tab-btn" onclick="switchTab('password')"><i class="fa-solid fa-key"></i> Ganti Password</button>
-    </div>
-
-    <!-- TAB 1: DATA SISWA -->
-    <div id="tab-siswa" class="tab-content active">
-      <h3 style="margin-bottom: 15px; color: #0d3b36;">Manajemen Data Siswa</h3>
-      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
-        Data siswa dapat diinput secara individual atau nanti diimpor langsung melalui file Excel.
-      </p>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Username</th>
-              <th>Nama Siswa</th>
-              <th>Tingkat/Kelas</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>siswa701</td>
-              <td>Ahmad Rifai</td>
-              <td>Kelas 7</td>
-              <td><span class="badge badge-success">Aktif</span></td>
-              <td><button class="btn-sm btn-danger"><i class="fa-solid fa-trash"></i> Hapus</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB 2: DATA GURU -->
-    <div id="tab-guru" class="tab-content">
-      <h3 style="margin-bottom: 15px; color: #0d3b36;">Manajemen Data Guru</h3>
-      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">Daftar guru pengampu mata pelajaran dan pembuat bank soal Google Form.</p>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Username</th>
-              <th>Nama Guru</th>
-              <th>Mapel Diampu</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>guru_indo</td>
-              <td>Siti Nurjanah, S.Pd.</td>
-              <td>Bahasa Indonesia</td>
-              <td><button class="btn-sm btn-danger"><i class="fa-solid fa-trash"></i> Hapus</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB 3: MATA PELAJARAN -->
-    <div id="tab-mapel" class="tab-content">
-      <h3 style="margin-bottom: 15px; color: #0d3b36;">Mata Pelajaran</h3>
-      <p style="font-size: 0.85rem; color: #64748b;">Kelola daftar mata pelajaran yang diuji di CBT.</p>
-    </div>
-
-    <!-- TAB 4: JADWAL & TOKEN -->
-    <div id="tab-jadwal" class="tab-content">
-      <h3 style="margin-bottom: 15px; color: #0d3b36;">Jadwal &amp; Token Ujian Real-Time</h3>
-      <p style="font-size: 0.85rem; color: #64748b;">Generate token 6 karakter untuk mengaktifkan sesi ujian siswa.</p>
-    </div>
-
-    <!-- TAB 5: GANTI PASSWORD ADMIN -->
-    <div id="tab-password" class="tab-content">
-      <h3 style="margin-bottom: 15px; color: #0d3b36;">Ganti Password Admin</h3>
-      <form id="formGantiPassword" style="max-width: 400px; margin-top: 20px;">
-        <div class="form-group">
-          <label for="oldPass">Password Lama</label>
-          <input type="password" id="oldPass" placeholder="Masukkan password saat ini..." required>
+        <!-- FORM BUAT UJIAN BARU -->
+        <div class="content-card">
+          <div class="card-title"><i class="fa-solid fa-square-plus"></i> Buat Event Ujian Baru</div>
+          <form id="formBuatUjian" style="margin-top: 15px;">
+            <div class="form-row">
+              <div class="form-group" style="flex: 2;">
+                <label>Nama Ujian</label>
+                <input type="text" id="namaUjianInput" placeholder="Contoh: Asesmen Sumatif Akhir Semester (ASAS) Ganjil" required>
+              </div>
+              <div class="form-group">
+                <label>Tanggal Mulai</label>
+                <input type="date" id="tglMulaiInput" required>
+              </div>
+              <div class="form-group">
+                <label>Tanggal Selesai</label>
+                <input type="date" id="tglSelesaiInput" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Event Ujian</button>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="newPass">Password Baru</label>
-          <input type="password" id="newPass" placeholder="Masukkan password baru..." required>
-        </div>
-        <button type="submit" class="btn-submit">Simpan Password Baru</button>
-      </form>
-    </div>
-  </section>
 
-  <!-- MODAL LOGIN ADMIN -->
+        <!-- TABEL DAFTAR UJIAN -->
+        <div class="content-card">
+          <div class="card-header-flex">
+            <div class="card-title"><i class="fa-solid fa-list"></i> Daftar Event Ujian</div>
+            <button class="btn btn-danger" onclick="clearAllData('ujian')"><i class="fa-solid fa-broom"></i> Clear All Ujian</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Nama Ujian</th>
+                  <th>Rentang Tanggal</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableUjianBody">
+                <!-- Content Loaded Dynamic -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODUL 2: DATA SISWA -->
+      <section id="tab-siswa" class="tab-pane" style="display: none;">
+        <div class="content-card">
+          <div class="card-header-flex">
+            <div class="card-title"><i class="fa-solid fa-users"></i> Kelola Data Siswa</div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-excel" onclick="downloadTemplateSiswa()"><i class="fa-solid fa-file-excel"></i> Template Excel</button>
+              <label class="btn btn-primary" style="margin: 0; cursor: pointer;">
+                <i class="fa-solid fa-file-import"></i> Import Excel
+                <input type="file" id="importExcelSiswa" accept=".xlsx, .xls" style="display: none;" onchange="importSiswaExcel(event)">
+              </label>
+              <button class="btn btn-danger" onclick="clearAllData('siswas')"><i class="fa-solid fa-broom"></i> Clear All Siswa</button>
+            </div>
+          </div>
+
+          <!-- FORM INPUT SISWA MANUAL -->
+          <form id="formInputSiswa" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+            <div class="form-row">
+              <div class="form-group"><label>Username / NISN</label><input type="text" id="siswaUser" required></div>
+              <div class="form-group"><label>Password</label><input type="text" id="siswaPass" required></div>
+              <div class="form-group"><label>Nama Lengkap Siswa</label><input type="text" id="siswaNama" required></div>
+              <div class="form-group">
+                <label>Tingkat / Kelas</label>
+                <select id="siswaKelas" required>
+                  <option value="Kelas 7">Kelas 7</option>
+                  <option value="Kelas 8">Kelas 8</option>
+                  <option value="Kelas 9">Kelas 9</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Tambah Siswa</button>
+          </form>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Username/NISN</th>
+                  <th>Nama Siswa</th>
+                  <th>Tingkat</th>
+                  <th>Password</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableSiswaBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODUL 3: DATA GURU -->
+      <section id="tab-guru" class="tab-pane" style="display: none;">
+        <div class="content-card">
+          <div class="card-header-flex">
+            <div class="card-title"><i class="fa-solid fa-chalkboard-user"></i> Kelola Data Guru</div>
+            <button class="btn btn-danger" onclick="clearAllData('gurus')"><i class="fa-solid fa-broom"></i> Clear All Guru</button>
+          </div>
+
+          <form id="formInputGuru" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+            <div class="form-row">
+              <div class="form-group"><label>Username Guru</label><input type="text" id="guruUser" required></div>
+              <div class="form-group"><label>Password</label><input type="text" id="guruPass" required></div>
+              <div class="form-group"><label>Nama Guru &amp; Gelar</label><input type="text" id="guruNama" required></div>
+              <div class="form-group"><label>Mapel Diampu</label><input type="text" id="guruMapel" placeholder="Contoh: Bahasa Indonesia" required></div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Tambah Guru</button>
+          </form>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Username</th>
+                  <th>Nama Guru</th>
+                  <th>Mapel Diampu</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableGuruBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODUL 4: MATA PELAJARAN -->
+      <section id="tab-mapel" class="tab-pane" style="display: none;">
+        <div class="content-card">
+          <div class="card-header-flex">
+            <div class="card-title"><i class="fa-solid fa-book"></i> Master Mata Pelajaran</div>
+            <button class="btn btn-danger" onclick="clearAllData('mapels')"><i class="fa-solid fa-broom"></i> Clear All Mapel</button>
+          </div>
+
+          <form id="formInputMapel" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+            <div class="form-row">
+              <div class="form-group"><label>Kode Mapel</label><input type="text" id="mapelKode" placeholder="BINDO" required></div>
+              <div class="form-group"><label>Nama Mata Pelajaran</label><input type="text" id="mapelNama" placeholder="Bahasa Indonesia" required></div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Tambah Mapel</button>
+          </form>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Kode Mapel</th>
+                  <th>Nama Mata Pelajaran</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableMapelBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODUL 5: JADWAL & TOKEN -->
+      <section id="tab-jadwal" class="tab-pane" style="display: none;">
+        <div class="content-card">
+          <div class="card-header-flex">
+            <div class="card-title"><i class="fa-solid fa-calendar-days"></i> Penjadwalan &amp; Generator Token</div>
+            <button class="btn btn-danger" onclick="clearAllData('jadwals')"><i class="fa-solid fa-broom"></i> Clear All Jadwal</button>
+          </div>
+
+          <form id="formInputJadwal" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Pilih Event Ujian Induk</label>
+                <select id="jadwalUjianSelect" required><option value="">-- Pilih Ujian --</option></select>
+              </div>
+              <div class="form-group">
+                <label>Mata Pelajaran</label>
+                <select id="jadwalMapelSelect" required><option value="">-- Pilih Mapel --</option></select>
+              </div>
+              <div class="form-group">
+                <label>Target Tingkat</label>
+                <select id="jadwalTingkatSelect" required>
+                  <option value="Semua Kelas">Semua Kelas</option>
+                  <option value="Kelas 7">Kelas 7</option>
+                  <option value="Kelas 8">Kelas 8</option>
+                  <option value="Kelas 9">Kelas 9</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Tanggal Pelaksanaan</label><input type="date" id="jadwalTgl" required></div>
+              <div class="form-group"><label>Jam Mulai</label><input type="time" id="jadwalJamMulai" required></div>
+              <div class="form-group"><label>Jam Selesai</label><input type="time" id="jadwalJamSelesai" required></div>
+              <div class="form-group">
+                <label>Token Ujian (6 Karakter)</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="jadwalToken" style="text-transform: uppercase; font-weight: 800;" maxlength="6" required>
+                  <button type="button" class="btn btn-warning" onclick="generateRandomToken()"><i class="fa-solid fa-rotate"></i> Acak</button>
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token</button>
+          </form>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Mapel / Event Ujian</th>
+                  <th>Target</th>
+                  <th>Waktu Pelaksanaan</th>
+                  <th>Token</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableJadwalBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODUL 6: MONITORING & PELAKSANAAN UJIAN -->
+      <section id="tab-monitoring" class="tab-pane" style="display: none;">
+        <div class="content-card">
+          <div class="card-title" style="margin-bottom: 20px;"><i class="fa-solid fa-desktop"></i> Monitoring Sesi Ujian Real-Time</div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Nama Siswa</th>
+                  <th>Kelas</th>
+                  <th>Mata Pelajaran</th>
+                  <th>Status Sesi</th>
+                  <th>Aksi Kontrol</th>
+                </tr>
+              </thead>
+              <tbody id="tableMonitoringBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada siswa yang sedang terhubung aktif.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL POPUP LOGIN ADMIN -->
   <div class="modal-overlay" id="loginModal">
     <div class="modal-card">
-      <button class="close-modal" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
-      <h3>Login Admin</h3>
+      <button class="close-modal" onclick="toggleModal('loginModal')"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-size: 1.3rem; color: #0d3b36; margin-bottom: 20px; font-weight: 800; text-align: center;">Login Admin</h3>
       <form id="adminLoginForm">
-        <div class="form-group">
-          <label for="username">Username Admin</label>
-          <input type="text" id="username" placeholder="Masukkan username..." required>
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>Username Admin</label>
+          <input type="text" id="username" placeholder="Username..." required>
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" placeholder="Masukkan password..." required>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Password..." required>
         </div>
-        <button type="submit" class="btn-submit" id="btnSubmitLogin">
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;" id="btnSubmitLogin">
           <span>Masuk Ke Dashboard</span>
         </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP EDIT PROFIL & PASSWORD ADMIN -->
+  <div class="modal-overlay" id="profilModal">
+    <div class="modal-card">
+      <button class="close-modal" onclick="toggleModal('profilModal')"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-size: 1.2rem; color: #0d3b36; margin-bottom: 20px; font-weight: 800;">Pengaturan Profil Admin</h3>
+      <form id="formGantiProfil">
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>Username Admin</label>
+          <input type="text" id="profUsername" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>Password Lama</label>
+          <input type="password" id="profOldPass" placeholder="Masukkan password lama..." required>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Password Baru</label>
+          <input type="password" id="profNewPass" placeholder="Masukkan password baru..." required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Simpan Perubahan</button>
       </form>
     </div>
   </div>
@@ -573,155 +849,432 @@
   <!-- FOOTER -->
   <footer>
     <img src="../Assets/aip 1.png" alt="Logo AIP Cloud">
-    <p>&copy; 2026 AIP CLOUD - All rights reserved</p>
+    <p>&copy; 2026 AIP CLOUD - MTs Al Ishlah Panambangan</p>
   </footer>
 
-  <!-- SCRIPT LOGIKA DAN INTEGRASI FIREBASE -->
+  <!-- INTEGRASI LOGIKA & FIREBASE -->
   <script type="module">
     import { db } from '../Assets/firebase.js';
-    import { doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { doc, getDoc, setDoc, updateDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const modal = document.getElementById('loginModal');
-    const openBtn = document.getElementById('openModalBtn');
-    const navLoginBtn = document.getElementById('navLoginBtn');
-    const closeBtn = document.getElementById('closeModalBtn');
-    const loginForm = document.getElementById('adminLoginForm');
-
-    const landingSection = document.getElementById('landingSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-    const navGuest = document.getElementById('navGuest');
-    const navAdmin = document.getElementById('navAdmin');
-    const btnLogout = document.getElementById('btnLogout');
-
-    // Modal Control
-    function toggleModal() {
-      modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    openBtn.addEventListener('click', toggleModal);
-    navLoginBtn.addEventListener('click', (e) => { e.preventDefault(); toggleModal(); });
-    closeBtn.addEventListener('click', toggleModal);
-    window.addEventListener('click', (e) => { if (e.target === modal) toggleModal(); });
-
-    // Switch Tab Function
-    window.switchTab = function(tabName) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-      event.currentTarget.classList.add('active');
-      document.getElementById(`tab-${tabName}`).classList.add('active');
+    // GLOBAL STATE
+    window.toggleModal = function(id) {
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
     };
 
-    // 1. Inisialisasi Akun Admin Default di Firestore
+    // USER DROPDOWN TOGGLE
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    userMenuBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userDropdown.classList.toggle('show');
+    });
+    window.addEventListener('click', () => userDropdown?.classList.remove('show'));
+
+    // SWITCH TAB MENU SIDEBAR
+    window.switchTab = function(tabName) {
+      document.querySelectorAll('.sidebar-menu-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.style.display = 'none');
+
+      event.currentTarget.classList.add('active');
+      document.getElementById(`tab-${tabName}`).style.display = 'block';
+
+      if (tabName === 'beranda') loadDataBeranda();
+      if (tabName === 'siswa') loadDataSiswa();
+      if (tabName === 'guru') loadDataGuru();
+      if (tabName === 'mapel') loadDataMapel();
+      if (tabName === 'jadwal') loadDataJadwal();
+    };
+
+    // 1. INIT ADMIN ACCOUNT DEFAULT
     async function initAdminAccount() {
       try {
         const adminRef = doc(db, "admins", "admin");
         const adminSnap = await getDoc(adminRef);
-
         if (!adminSnap.exists()) {
           await setDoc(adminRef, {
             username: "admin",
             password: "admin123",
-            role: "superadmin",
-            nama: "Administrator Utama",
-            createdAt: new Date().toISOString()
+            nama: "Administrator Utama"
           });
         }
-      } catch (error) {
-        console.error("Gagal inisialisasi admin:", error);
-      }
+      } catch (e) { console.error(e); }
     }
     initAdminAccount();
 
-    // Check Active Session
+    // CHECK SESSION LOGGED IN
     function checkSession() {
       const session = JSON.parse(localStorage.getItem('adminSession'));
       if (session && session.isLoggedIn) {
-        landingSection.style.display = 'none';
-        dashboardSection.style.display = 'block';
-        navGuest.style.display = 'none';
-        navAdmin.style.display = 'flex';
-        document.getElementById('welcomeMsg').innerText = `Halo, ${session.nama}`;
-        document.getElementById('dashAdminName').innerText = session.nama;
+        document.getElementById('landingSection').style.display = 'none';
+        document.getElementById('dashboardWrapper').style.display = 'flex';
+        document.getElementById('navGuest').style.display = 'none';
+        document.getElementById('navAdmin').style.display = 'block';
+        document.getElementById('headerAdminName').innerText = session.nama || 'Administrator';
+        document.getElementById('profUsername').value = session.username;
+        loadDataBeranda();
       } else {
-        landingSection.style.display = 'grid';
-        dashboardSection.style.display = 'none';
-        navGuest.style.display = 'flex';
-        navAdmin.style.display = 'none';
+        document.getElementById('landingSection').style.display = 'grid';
+        document.getElementById('dashboardWrapper').style.display = 'none';
+        document.getElementById('navGuest').style.display = 'block';
+        document.getElementById('navAdmin').style.display = 'none';
       }
     }
     checkSession();
 
-    // 2. Login Logic
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const userInput = document.getElementById('username').value.trim();
-      const passInput = document.getElementById('password').value.trim();
-      const btnSubmit = document.getElementById('btnSubmitLogin');
+    // LOGIN EVENT
+    document.getElementById('openModalBtn')?.addEventListener('click', () => toggleModal('loginModal'));
+    document.getElementById('openLoginModalNav')?.addEventListener('click', () => toggleModal('loginModal'));
 
-      btnSubmit.disabled = true;
-      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...`;
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+      const btn = document.getElementById('btnSubmitLogin');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...`;
 
       try {
-        const adminRef = doc(db, "admins", userInput);
-        const adminSnap = await getDoc(adminRef);
-
-        if (adminSnap.exists()) {
-          const adminData = adminSnap.data();
-          if (adminData.password === passInput) {
-            localStorage.setItem('adminSession', JSON.stringify({
-              username: adminData.username,
-              nama: adminData.nama,
-              role: adminData.role,
-              isLoggedIn: true
-            }));
-
-            if (modal.style.display === 'flex') toggleModal();
-            checkSession();
-          } else {
-            alert('Password salah!');
-          }
+        const adminSnap = await getDoc(doc(db, "admins", u));
+        if (adminSnap.exists() && adminSnap.data().password === p) {
+          localStorage.setItem('adminSession', JSON.stringify({
+            username: u,
+            nama: adminSnap.data().nama,
+            isLoggedIn: true
+          }));
+          toggleModal('loginModal');
+          checkSession();
         } else {
-          alert('Username admin tidak ditemukan!');
+          alert('Username atau password salah!');
         }
-      } catch (error) {
-        console.error("Error login:", error);
-        alert("Terjadi kesalahan koneksi database.");
+      } catch (err) {
+        alert('Koneksi terganggu.');
       } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = `<span>Masuk Ke Dashboard</span>`;
+        btn.disabled = false;
+        btn.innerHTML = `<span>Masuk Ke Dashboard</span>`;
       }
     });
 
-    // 3. Logout Logic
-    btnLogout.addEventListener('click', () => {
+    // LOGOUT EVENT
+    document.getElementById('btnLogout').addEventListener('click', () => {
       localStorage.removeItem('adminSession');
       checkSession();
     });
 
-    // 4. Ganti Password Logic
-    document.getElementById('formGantiPassword').addEventListener('submit', async (e) => {
+    // EDIT PROFIL & PASSWORD ADMIN
+    document.getElementById('btnOpenProfilModal').addEventListener('click', () => toggleModal('profilModal'));
+    document.getElementById('formGantiProfil').addEventListener('submit', async (e) => {
       e.preventDefault();
       const session = JSON.parse(localStorage.getItem('adminSession'));
-      const oldPass = document.getElementById('oldPass').value;
-      const newPass = document.getElementById('newPass').value;
+      const oldPass = document.getElementById('profOldPass').value;
+      const newPass = document.getElementById('profNewPass').value;
 
       try {
-        const adminRef = doc(db, "admins", session.username);
-        const adminSnap = await getDoc(adminRef);
-
-        if (adminSnap.exists() && adminSnap.data().password === oldPass) {
-          await updateDoc(adminRef, { password: newPass });
-          alert("Password berhasil diperbarui!");
-          document.getElementById('formGantiPassword').reset();
+        const ref = doc(db, "admins", session.username);
+        const snap = await getDoc(ref);
+        if (snap.exists() && snap.data().password === oldPass) {
+          await updateDoc(ref, { password: newPass });
+          alert("Profil & Password berhasil diubah!");
+          toggleModal('profilModal');
+          document.getElementById('formGantiProfil').reset();
         } else {
-          alert("Password lama yang Anda masukkan salah.");
+          alert("Password lama tidak cocok.");
         }
-      } catch (err) {
-        console.error(err);
-        alert("Gagal memperbarui password.");
-      }
+      } catch (err) { alert("Gagal menyimpan profil."); }
     });
+
+    // --- MODUL BERANDA (EVENT UJIAN) ---
+    document.getElementById('formBuatUjian').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nama = document.getElementById('namaUjianInput').value;
+      const tglMulai = document.getElementById('tglMulaiInput').value;
+      const tglSelesai = document.getElementById('tglSelesaiInput').value;
+      const id = 'ujian_' + Date.now();
+
+      await setDoc(doc(db, "ujian", id), { id, nama, tglMulai, tglSelesai });
+      document.getElementById('formBuatUjian').reset();
+      loadDataBeranda();
+    });
+
+    async function loadDataBeranda() {
+      const tbody = document.getElementById('tableUjianBody');
+      tbody.innerHTML = '';
+      const snap = await getDocs(collection(db, "ujian"));
+
+      let countAktif = 0, countSelesai = 0, no = 1;
+      const today = new Date().toISOString().split('T')[0];
+
+      snap.forEach(d => {
+        const item = d.data();
+        let statusBadge = `<span class="badge badge-warning">Belum Dimulai</span>`;
+        if (today >= item.tglMulai && today <= item.tglSelesai) {
+          statusBadge = `<span class="badge badge-success">Berlangsung (Aktif)</span>`;
+          countAktif++;
+        } else if (today > item.tglSelesai) {
+          statusBadge = `<span class="badge badge-secondary">Selesai</span>`;
+          countSelesai++;
+        }
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${no++}</td>
+            <td><strong>${item.nama}</strong></td>
+            <td>${item.tglMulai} s.d. ${item.tglSelesai}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-warning" onclick="editItem('ujian', '${item.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-danger" onclick="deleteItem('ujian', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('statUjianAktif').innerText = countAktif;
+      document.getElementById('statUjianSelesai').innerText = countSelesai;
+
+      // Update Guru Count
+      const guruSnap = await getDocs(collection(db, "gurus"));
+      document.getElementById('statTotalGuru').innerText = guruSnap.size;
+    }
+
+    // --- MODUL DATA SISWA ---
+    document.getElementById('formInputSiswa').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('siswaUser').value.trim();
+      const p = document.getElementById('siswaPass').value.trim();
+      const nama = document.getElementById('siswaNama').value.trim();
+      const kelas = document.getElementById('siswaKelas').value;
+
+      await setDoc(doc(db, "siswas", u), { username: u, password: p, nama, kelas });
+      document.getElementById('formInputSiswa').reset();
+      loadDataSiswa();
+    });
+
+    async function loadDataSiswa() {
+      const tbody = document.getElementById('tableSiswaBody');
+      tbody.innerHTML = '';
+      const snap = await getDocs(collection(db, "siswas"));
+      let no = 1;
+      snap.forEach(d => {
+        const item = d.data();
+        tbody.innerHTML += `
+          <tr>
+            <td>${no++}</td>
+            <td>${item.username}</td>
+            <td>${item.nama}</td>
+            <td><span class="badge badge-success">${item.kelas}</span></td>
+            <td>${item.password}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-danger" onclick="deleteItem('siswas', '${item.username}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // IMPORT EXCEL SISWA
+    window.downloadTemplateSiswa = function() {
+      const ws = XLSX.utils.json_to_sheet([
+        { NISN: "12345678", Nama: "Ahmad Rifai", Kelas: "Kelas 7", Password: "123" }
+      ]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Template_Siswa");
+      XLSX.writeFile(wb, "template_siswa.xlsx");
+    };
+
+    window.importSiswaExcel = function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const data = XLSX.utils.sheet_to_json(wb.Sheets[wsname]);
+
+        for (let row of data) {
+          if (row.NISN && row.Nama) {
+            await setDoc(doc(db, "siswas", String(row.NISN)), {
+              username: String(row.NISN),
+              nama: row.Nama,
+              kelas: row.Kelas || "Kelas 7",
+              password: String(row.Password || "123456")
+            });
+          }
+        }
+        alert("Import Data Siswa Berhasil!");
+        loadDataSiswa();
+      };
+      reader.readAsBinaryString(file);
+    };
+
+    // --- MODUL DATA GURU ---
+    document.getElementById('formInputGuru').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('guruUser').value.trim();
+      const p = document.getElementById('guruPass').value.trim();
+      const nama = document.getElementById('guruNama').value.trim();
+      const mapel = document.getElementById('guruMapel').value.trim();
+
+      await setDoc(doc(db, "gurus", u), { username: u, password: p, nama, mapel });
+      document.getElementById('formInputGuru').reset();
+      loadDataGuru();
+    });
+
+    async function loadDataGuru() {
+      const tbody = document.getElementById('tableGuruBody');
+      tbody.innerHTML = '';
+      const snap = await getDocs(collection(db, "gurus"));
+      let no = 1;
+      snap.forEach(d => {
+        const item = d.data();
+        tbody.innerHTML += `
+          <tr>
+            <td>${no++}</td>
+            <td>${item.username}</td>
+            <td>${item.nama}</td>
+            <td>${item.mapel}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-danger" onclick="deleteItem('gurus', '${item.username}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // --- MODUL MAPEL ---
+    document.getElementById('formInputMapel').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const kode = document.getElementById('mapelKode').value.trim().toUpperCase();
+      const nama = document.getElementById('mapelNama').value.trim();
+
+      await setDoc(doc(db, "mapels", kode), { kode, nama });
+      document.getElementById('formInputMapel').reset();
+      loadDataMapel();
+    });
+
+    async function loadDataMapel() {
+      const tbody = document.getElementById('tableMapelBody');
+      tbody.innerHTML = '';
+      const snap = await getDocs(collection(db, "mapels"));
+      let no = 1;
+      snap.forEach(d => {
+        const item = d.data();
+        tbody.innerHTML += `
+          <tr>
+            <td>${no++}</td>
+            <td><strong>${item.kode}</strong></td>
+            <td>${item.nama}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-danger" onclick="deleteItem('mapels', '${item.kode}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // --- MODUL JADWAL & TOKEN ---
+    window.generateRandomToken = function() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let token = '';
+      for (let i = 0; i < 6; i++) {
+        token += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('jadwalToken').value = token;
+    };
+
+    async function populateJadwalSelects() {
+      const ujianSel = document.getElementById('jadwalUjianSelect');
+      const mapelSel = document.getElementById('jadwalMapelSelect');
+      ujianSel.innerHTML = '<option value="">-- Pilih Ujian --</option>';
+      mapelSel.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+
+      const uSnap = await getDocs(collection(db, "ujian"));
+      uSnap.forEach(d => ujianSel.innerHTML += `<option value="${d.data().nama}">${d.data().nama}</option>`);
+
+      const mSnap = await getDocs(collection(db, "mapels"));
+      mSnap.forEach(d => mapelSel.innerHTML += `<option value="${d.data().nama}">${d.data().nama}</option>`);
+    }
+
+    document.getElementById('formInputJadwal').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = 'jdwl_' + Date.now();
+      const data = {
+        id,
+        ujian: document.getElementById('jadwalUjianSelect').value,
+        mapel: document.getElementById('jadwalMapelSelect').value,
+        tingkat: document.getElementById('jadwalTingkatSelect').value,
+        tgl: document.getElementById('jadwalTgl').value,
+        jamMulai: document.getElementById('jadwalJamMulai').value,
+        jamSelesai: document.getElementById('jadwalJamSelesai').value,
+        token: document.getElementById('jadwalToken').value.toUpperCase()
+      };
+
+      await setDoc(doc(db, "jadwals", id), data);
+      document.getElementById('formInputJadwal').reset();
+      loadDataJadwal();
+    });
+
+    async function loadDataJadwal() {
+      populateJadwalSelects();
+      const tbody = document.getElementById('tableJadwalBody');
+      tbody.innerHTML = '';
+      const snap = await getDocs(collection(db, "jadwals"));
+      let no = 1;
+      snap.forEach(d => {
+        const item = d.data();
+        tbody.innerHTML += `
+          <tr>
+            <td>${no++}</td>
+            <td><strong>${item.mapel}</strong><br><small style="color:#64748b">${item.ujian}</small></td>
+            <td><span class="badge badge-warning">${item.tingkat}</span></td>
+            <td>${item.tgl}<br><small>${item.jamMulai} - ${item.jamSelesai}</small></td>
+            <td><strong style="color:#0d3b36; font-size:1.1rem">${item.token}</strong></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-danger" onclick="deleteItem('jadwals', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // --- UTILITY DELETE & CLEAR ALL DATA ---
+    window.deleteItem = async function(coll, id) {
+      if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+        await deleteDoc(doc(db, coll, id));
+        if (coll === 'ujian') loadDataBeranda();
+        if (coll === 'siswas') loadDataSiswa();
+        if (coll === 'gurus') loadDataGuru();
+        if (coll === 'mapels') loadDataMapel();
+        if (coll === 'jadwals') loadDataJadwal();
+      }
+    };
+
+    window.clearAllData = async function(coll) {
+      if (confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus SELURUH DATA pada koleksi '${coll}'? Action ini tidak bisa dibatalkan!`)) {
+        const snap = await getDocs(collection(db, coll));
+        for (let d of snap.docs) {
+          await deleteDoc(doc(db, coll, d.id));
+        }
+        alert("Seluruh data berhasil dibersihkan!");
+        if (coll === 'ujian') loadDataBeranda();
+        if (coll === 'siswas') loadDataSiswa();
+        if (coll === 'gurus') loadDataGuru();
+        if (coll === 'mapels') loadDataMapel();
+        if (coll === 'jadwals') loadDataJadwal();
+      }
+    };
   </script>
 
 </body>
