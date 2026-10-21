@@ -1,1 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-CBT - MTs Al Ishlah Panambangan</title>
+  
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: #ffffff;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* HEADER / NAVBAR */
+    header {
+      background-color: #0d3b36;
+      color: #ffffff;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .brand img {
+      height: 48px;
+      width: auto;
+    }
+
+    .brand-text h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      line-height: 1.2;
+    }
+
+    .brand-text p {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* NAV LINKS KANAN */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .nav-links a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.9;
+      transition: opacity 0.2s, color 0.2s;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      opacity: 1;
+      color: #34d399;
+    }
+
+    /* HERO SECTION UTAMA */
+    main {
+      flex: 1;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 80px 40px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      align-items: center;
+      gap: 50px;
+    }
+
+    .hero-text h2 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      color: #0d3b36;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+    }
+
+    /* TOMBOL AKSI KANAN */
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: flex-end;
+    }
+
+    .btn-portal {
+      width: 100%;
+      max-width: 320px;
+      padding: 20px 30px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-siswa {
+      background-color: #cbd5e1;
+      color: #0f172a;
+    }
+    .btn-siswa:hover {
+      background-color: #b0c4de;
+      transform: translateY(-3px);
+    }
+
+    .btn-guru {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+    .btn-guru:hover {
+      background-color: #bae6fd;
+      transform: translateY(-3px);
+    }
+
+    .btn-admin {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    .btn-admin:hover {
+      background-color: #fde047;
+      transform: translateY(-3px);
+    }
+
+    /* FOOTER DENGAN ORNAMEN GUNUNG/HIJAU */
+    footer {
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #d1fae5 100%);
+      padding: 25px 20px 20px 20px;
+      text-align: center;
+      position: relative;
+      margin-top: auto;
+    }
+
+    footer img {
+      height: 32px;
+      margin-bottom: 6px;
+    }
+
+    footer p {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+      letter-spacing: 0.5px;
+    }
+
+    /* RESPONSIF UNTUK HP / MOBILE */
+    @media (max-width: 900px) {
+      header { padding: 15px 20px; flex-direction: column; gap: 15px; }
+      .nav-links { gap: 15px; flex-wrap: wrap; justify-content: center; }
+      main { grid-template-columns: 1fr; text-align: center; padding: 40px 20px; gap: 30px; }
+      .hero-text h2 { font-size: 2.2rem; }
+      .hero-actions { align-items: center; }
+      .btn-portal { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER / NAVBAR -->
+  <header>
+    <div class="brand">
+      <img src="Assets/mts.png" alt="Logo MTs Al Ishlah">
+      <div class="brand-text">
+        <h1>e - C B T</h1>
+        <p>UJIAN SEKOLAH - COMPUTER BASED TEST MANDIRI</p>
+      </div>
+    </div>
+
+    <nav class="nav-links">
+      <a href="index.html" class="active"><i class="fa-solid fa-house"></i> Beranda</a>
+      <a href="Siswa/index.html"><i class="fa-solid fa-user-graduate"></i> Siswa</a>
+      <a href="Guru/index.html"><i class="fa-solid fa-chalkboard-user"></i> Guru</a>
+      <a href="Admin/index.html"><i class="fa-solid fa-user-shield"></i> Admin</a>
+    </nav>
+  </header>
+
+  <!-- KONTEN UTAMA -->
+  <main>
+    <div class="hero-text">
+      <h2>Selamat Datang di<br>Aplikasi E-CBT<br>MTs Al Ishlah<br>Panambangan</h2>
+    </div>
+
+    <div class="hero-actions">
+      <a href="Siswa/index.html" class="btn-portal btn-siswa">MASUK UJIAN SISWA</a>
+      <a href="Guru/index.html" class="btn-portal btn-guru">MASUK PORTAL GURU</a>
+      <a href="Admin/index.html" class="btn-portal btn-admin">MASUK PORTAL ADMIN</a>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <img src="Assets/aip 1.png" alt="Logo AIP Cloud">
+    <p>&copy; 2026 AIP CLOUD - All rights reserved</p>
+  </footer>
+
+</body>
+</html>
