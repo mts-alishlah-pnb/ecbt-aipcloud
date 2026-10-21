@@ -215,6 +215,10 @@
       font-size: 1rem;
       cursor: pointer;
       transition: background-color 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
     }
 
     .btn-submit:hover {
@@ -254,7 +258,6 @@
       color: #334155;
     }
 
-    /* RESPONSIVE */
     @media (max-width: 768px) {
       header {
         flex-direction: column;
@@ -322,7 +325,9 @@
           <label for="password">Password</label>
           <input type="password" id="password" placeholder="Masukkan password..." required>
         </div>
-        <button type="submit" class="btn-submit">Masuk Ke Dashboard</button>
+        <button type="submit" class="btn-submit" id="btnSubmitLogin">
+          <span>Masuk Ke Dashboard</span>
+        </button>
       </form>
     </div>
   </div>
@@ -333,16 +338,18 @@
     <p>&copy; 2026 AIP CLOUD - All rights reserved</p>
   </footer>
 
-  <!-- SCRIPT INTERAKSI MODAL & FIREBASE -->
+  <!-- SCRIPT INTERAKSI MODAL & INTEGRASI FIREBASE -->
   <script type="module">
     import { db } from '../Assets/firebase.js';
-    // Nanti logika autentikasi admin via Firestore akan diletakkan di sini
+    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const modal = document.getElementById('loginModal');
     const openBtn = document.getElementById('openModalBtn');
     const navLoginBtn = document.getElementById('navLoginBtn');
     const closeBtn = document.getElementById('closeModalBtn');
+    const loginForm = document.getElementById('adminLoginForm');
 
+    // Toggle Modal
     function toggleModal() {
       modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
     }
@@ -360,14 +367,72 @@
       }
     });
 
-    // Simulasi Submit Login Admin
-    document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
+    // 1. Inisialisasi Akun Admin Default di Firebase Firestore jika belum ada
+    async function initAdminAccount() {
+      try {
+        const adminRef = doc(db, "admins", "admin");
+        const adminSnap = await getDoc(adminRef);
+
+        if (!adminSnap.exists()) {
+          await setDoc(adminRef, {
+            username: "admin",
+            password: "admin123",
+            role: "superadmin",
+            nama: "Administrator Utama",
+            createdAt: new Date().toISOString()
+          });
+          console.log("Akun admin default berhasil dibuat.");
+        }
+      } catch (error) {
+        console.error("Gagal menginisialisasi akun admin:", error);
+      }
+    }
+
+    // Jalankan inisialisasi akun admin saat halaman dimuat
+    initAdminAccount();
+
+    // 2. Logika Validasi Login Admin
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
-      
-      // Catatan: Validasi nyata akan dihubungkan ke koleksi database admin di Firebase
-      alert('Fitur autentikasi admin ke Firebase akan segera dihubungkan!');
+      const userInput = document.getElementById('username').value.trim();
+      const passInput = document.getElementById('password').value.trim();
+      const btnSubmit = document.getElementById('btnSubmitLogin');
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...`;
+
+      try {
+        const adminRef = doc(db, "admins", userInput);
+        const adminSnap = await getDoc(adminRef);
+
+        if (adminSnap.exists()) {
+          const adminData = adminSnap.data();
+          if (adminData.password === passInput) {
+            // Simpan status session login ke LocalStorage
+            localStorage.setItem('adminSession', JSON.stringify({
+              username: adminData.username,
+              nama: adminData.nama,
+              role: adminData.role,
+              isLoggedIn: true
+            }));
+
+            alert('Login Berhasil! Selamat datang, ' + adminData.nama);
+            // Selanjutnya mengarah ke dashboard admin setelah kodenya kita siapkan
+            // window.location.href = 'dashboard.html';
+            toggleModal();
+          } else {
+            alert('Password salah. Silakan coba lagi!');
+          }
+        } else {
+          alert('Username admin tidak ditemukan!');
+        }
+      } catch (error) {
+        console.error("Error login:", error);
+        alert("Terjadi kesalahan koneksi database. Periksa koneksi internet Anda.");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<span>Masuk Ke Dashboard</span>`;
+      }
     });
   </script>
 
