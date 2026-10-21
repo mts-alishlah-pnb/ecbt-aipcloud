@@ -68,6 +68,30 @@
       font-weight: 600;
     }
 
+    /* GUEST NAV */
+    #navGuest {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    #navGuest a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+
+    #navGuest a:hover {
+      opacity: 1;
+      color: #34d399;
+    }
+
     /* DROPDOWN PROFIL ADMIN */
     .user-profile-menu {
       position: relative;
@@ -334,6 +358,36 @@
       border-color: #0d3b36;
     }
 
+    /* CHECKBOX CONTAINER UNTUK MAPEL GURU */
+    .checkbox-group-container {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      max-height: 120px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #334155;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #0d3b36;
+      cursor: pointer;
+    }
+
     /* BUTTONS & BADGES */
     .btn {
       padding: 10px 18px;
@@ -454,12 +508,13 @@
       </div>
     </div>
 
-    <!-- GUEST NAV -->
+    <!-- GUEST NAV (SEBELUM LOGIN) -->
     <nav id="navGuest">
+      <a href="../index.html"><i class="fa-solid fa-house"></i> Beranda</a>
       <button class="btn btn-primary" id="openLoginModalNav"><i class="fa-solid fa-right-to-bracket"></i> Login Admin</button>
     </nav>
 
-    <!-- ADMIN NAV -->
+    <!-- ADMIN NAV (SAAT LOGIN) -->
     <div id="navAdmin" class="user-profile-menu" style="display: none;">
       <div class="user-info-btn" id="userMenuBtn">
         <div class="user-avatar"><i class="fa-solid fa-user-shield"></i></div>
@@ -602,7 +657,6 @@
           </div>
 
           <form id="formInputSiswa" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
-            <input type="hidden" id="editSiswaMode" value="false">
             <div class="form-row">
               <div class="form-group"><label>Username / NISN</label><input type="text" id="siswaUser" required></div>
               <div class="form-group"><label>Password</label><input type="text" id="siswaPass" required></div>
@@ -653,16 +707,15 @@
           </div>
 
           <form id="formInputGuru" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
-            <input type="hidden" id="editGuruMode" value="false">
             <div class="form-row">
               <div class="form-group"><label>Username Guru</label><input type="text" id="guruUser" required></div>
               <div class="form-group"><label>Password</label><input type="text" id="guruPass" required></div>
               <div class="form-group"><label>Nama Guru &amp; Gelar</label><input type="text" id="guruNama" required></div>
               <div class="form-group">
-                <label>Mapel Diampu (Dari Master Mapel)</label>
-                <select id="guruMapelSelect" required>
-                  <option value="">-- Pilih Mapel --</option>
-                </select>
+                <label>Mapel Diampu (Bisa Pilih > 1)</label>
+                <div class="checkbox-group-container" id="guruMapelCheckboxes">
+                  <small style="color: #94a3b8;">Belum ada master mapel.</small>
+                </div>
               </div>
             </div>
             <button type="submit" class="btn btn-primary" id="btnSimpanGuru"><i class="fa-solid fa-plus"></i> Tambah Guru</button>
@@ -919,7 +972,7 @@
       } else {
         document.getElementById('landingSection').style.display = 'grid';
         document.getElementById('dashboardWrapper').style.display = 'none';
-        document.getElementById('navGuest').style.display = 'block';
+        document.getElementById('navGuest').style.display = 'flex';
         document.getElementById('navAdmin').style.display = 'none';
       }
     }
@@ -1140,13 +1193,25 @@
     };
 
     // --- 3. MODUL DATA GURU ---
-    async function populateGuruMapelDropdown() {
-      const sel = document.getElementById('guruMapelSelect');
-      sel.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+    async function populateGuruMapelCheckboxes(selectedMapelArray = []) {
+      const container = document.getElementById('guruMapelCheckboxes');
+      container.innerHTML = '';
       const snap = await getDocs(collection(db, "mapels"));
+
+      if (snap.empty) {
+        container.innerHTML = '<small style="color: #94a3b8;">Belum ada master mapel. Tambahkan di menu Mata Pelajaran lebih dulu.</small>';
+        return;
+      }
+
       snap.forEach(d => {
         const m = d.data();
-        sel.innerHTML += `<option value="${m.nama}">${m.nama} (${m.kode})</option>`;
+        const isChecked = selectedMapelArray.includes(m.nama) ? 'checked' : '';
+        container.innerHTML += `
+          <label class="checkbox-item">
+            <input type="checkbox" name="guruMapelCheck" value="${m.nama}" ${isChecked}>
+            <span>${m.nama} (${m.kode})</span>
+          </label>
+        `;
       });
     }
 
@@ -1155,9 +1220,22 @@
       const u = document.getElementById('guruUser').value.trim();
       const p = document.getElementById('guruPass').value.trim();
       const nama = document.getElementById('guruNama').value.trim();
-      const mapel = document.getElementById('guruMapelSelect').value;
 
-      await setDoc(doc(db, "gurus", u), { username: u, password: p, nama, mapel });
+      const checkedBoxes = document.querySelectorAll('input[name="guruMapelCheck"]:checked');
+      const mapelList = Array.from(checkedBoxes).map(cb => cb.value);
+
+      if (mapelList.length === 0) {
+        alert("Pilih setidaknya satu mata pelajaran yang diampu oleh guru!");
+        return;
+      }
+
+      await setDoc(doc(db, "gurus", u), {
+        username: u,
+        password: p,
+        nama,
+        mapel: mapelList.join(", ")
+      });
+
       document.getElementById('formInputGuru').reset();
       document.getElementById('guruUser').disabled = false;
       document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Guru`;
@@ -1165,22 +1243,23 @@
     });
 
     window.editGuru = async function(username) {
-      await populateGuruMapelDropdown();
       const snap = await getDoc(doc(db, "gurus", username));
       if (snap.exists()) {
         const d = snap.data();
+        const existingMapelList = d.mapel ? d.mapel.split(", ").map(s => s.trim()) : [];
+        await populateGuruMapelCheckboxes(existingMapelList);
+
         document.getElementById('guruUser').value = d.username;
         document.getElementById('guruUser').disabled = true;
         document.getElementById('guruPass').value = d.password;
         document.getElementById('guruNama').value = d.nama;
-        document.getElementById('guruMapelSelect').value = d.mapel;
         document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-pen"></i> Update Guru`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
 
     async function loadDataGuru() {
-      await populateGuruMapelDropdown();
+      await populateGuruMapelCheckboxes();
       const tbody = document.getElementById('tableGuruBody');
       tbody.innerHTML = '';
       const snap = await getDocs(collection(db, "gurus"));
@@ -1192,7 +1271,7 @@
             <td>${no++}</td>
             <td>${item.username}</td>
             <td>${item.nama}</td>
-            <td>${item.mapel}</td>
+            <td><strong>${item.mapel || '-'}</strong></td>
             <td>
               <div class="action-btns">
                 <button class="btn btn-warning" onclick="editGuru('${item.username}')"><i class="fa-solid fa-pen"></i></button>
@@ -1206,7 +1285,7 @@
 
     window.downloadTemplateGuru = function() {
       const ws = XLSX.utils.json_to_sheet([
-        { Username: "guru_indo", Password: "123", Nama: "Siti Nurjanah, S.Pd.", Mapel: "Bahasa Indonesia" }
+        { Username: "guru_indo", Password: "123", Nama: "Siti Nurjanah, S.Pd.", Mapel: "Bahasa Indonesia, Fiqih" }
       ]);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Template_Guru");
