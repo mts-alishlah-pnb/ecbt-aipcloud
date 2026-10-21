@@ -454,12 +454,12 @@
       </div>
     </div>
 
-    <!-- GUEST NAV (SEBELUM LOGIN) -->
+    <!-- GUEST NAV -->
     <nav id="navGuest">
       <button class="btn btn-primary" id="openLoginModalNav"><i class="fa-solid fa-right-to-bracket"></i> Login Admin</button>
     </nav>
 
-    <!-- ADMIN NAV (SAAT LOGIN) -->
+    <!-- ADMIN NAV -->
     <div id="navAdmin" class="user-profile-menu" style="display: none;">
       <div class="user-info-btn" id="userMenuBtn">
         <div class="user-avatar"><i class="fa-solid fa-user-shield"></i></div>
@@ -467,7 +467,6 @@
         <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
       </div>
 
-      <!-- DROPDOWN MENU -->
       <div class="dropdown-menu" id="userDropdown">
         <button class="dropdown-item" id="btnOpenProfilModal"><i class="fa-solid fa-user-gear"></i> Profil &amp; Password</button>
         <hr style="border: 0; border-top: 1px solid #e2e8f0;">
@@ -476,7 +475,7 @@
     </div>
   </header>
 
-  <!-- LANDING PAGE (NON-LOGGED IN) -->
+  <!-- LANDING PAGE -->
   <main id="landingSection">
     <div class="hero-text">
       <h2>Selamat Datang</h2>
@@ -492,9 +491,8 @@
     </div>
   </main>
 
-  <!-- DASHBOARD UTAMA ADMIN (LOGGED IN) -->
+  <!-- DASHBOARD UTAMA ADMIN -->
   <div id="dashboardWrapper">
-    <!-- SIDEBAR KIRI -->
     <aside class="sidebar">
       <button class="sidebar-menu-btn active" onclick="switchTab('beranda')">
         <i class="fa-solid fa-house"></i> Beranda
@@ -516,12 +514,10 @@
       </button>
     </aside>
 
-    <!-- AREA KONTEN UTAMA -->
     <main class="main-content">
 
       <!-- MODUL 1: BERANDA -->
       <section id="tab-beranda" class="tab-pane">
-        <!-- CARDS RINGKASAN -->
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-icon guru"><i class="fa-solid fa-chalkboard-user"></i></div>
@@ -546,14 +542,14 @@
           </div>
         </div>
 
-        <!-- FORM BUAT UJIAN BARU -->
         <div class="content-card">
           <div class="card-title"><i class="fa-solid fa-square-plus"></i> Buat Event Ujian Baru</div>
           <form id="formBuatUjian" style="margin-top: 15px;">
+            <input type="hidden" id="editUjianId">
             <div class="form-row">
               <div class="form-group" style="flex: 2;">
                 <label>Nama Ujian</label>
-                <input type="text" id="namaUjianInput" placeholder="Contoh: Asesmen Sumatif Akhir Semester (ASAS) Ganjil" required>
+                <input type="text" id="namaUjianInput" placeholder="Contoh: Asesmen Sumatif Akhir Semester (ASAS)" required>
               </div>
               <div class="form-group">
                 <label>Tanggal Mulai</label>
@@ -564,11 +560,10 @@
                 <input type="date" id="tglSelesaiInput" required>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Event Ujian</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpanUjian"><i class="fa-solid fa-floppy-disk"></i> Simpan Event Ujian</button>
           </form>
         </div>
 
-        <!-- TABEL DAFTAR UJIAN -->
         <div class="content-card">
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-list"></i> Daftar Event Ujian</div>
@@ -585,9 +580,7 @@
                   <th>Aksi</th>
                 </tr>
               </thead>
-              <tbody id="tableUjianBody">
-                <!-- Content Loaded Dynamic -->
-              </tbody>
+              <tbody id="tableUjianBody"></tbody>
             </table>
           </div>
         </div>
@@ -608,8 +601,8 @@
             </div>
           </div>
 
-          <!-- FORM INPUT SISWA MANUAL -->
           <form id="formInputSiswa" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+            <input type="hidden" id="editSiswaMode" value="false">
             <div class="form-row">
               <div class="form-group"><label>Username / NISN</label><input type="text" id="siswaUser" required></div>
               <div class="form-group"><label>Password</label><input type="text" id="siswaPass" required></div>
@@ -623,7 +616,7 @@
                 </select>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Tambah Siswa</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpanSiswa"><i class="fa-solid fa-user-plus"></i> Tambah Siswa</button>
           </form>
 
           <div class="table-container">
@@ -649,17 +642,30 @@
         <div class="content-card">
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-chalkboard-user"></i> Kelola Data Guru</div>
-            <button class="btn btn-danger" onclick="clearAllData('gurus')"><i class="fa-solid fa-broom"></i> Clear All Guru</button>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-excel" onclick="downloadTemplateGuru()"><i class="fa-solid fa-file-excel"></i> Template Excel</button>
+              <label class="btn btn-primary" style="margin: 0; cursor: pointer;">
+                <i class="fa-solid fa-file-import"></i> Import Excel
+                <input type="file" id="importExcelGuru" accept=".xlsx, .xls" style="display: none;" onchange="importGuruExcel(event)">
+              </label>
+              <button class="btn btn-danger" onclick="clearAllData('gurus')"><i class="fa-solid fa-broom"></i> Clear All Guru</button>
+            </div>
           </div>
 
           <form id="formInputGuru" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+            <input type="hidden" id="editGuruMode" value="false">
             <div class="form-row">
               <div class="form-group"><label>Username Guru</label><input type="text" id="guruUser" required></div>
               <div class="form-group"><label>Password</label><input type="text" id="guruPass" required></div>
               <div class="form-group"><label>Nama Guru &amp; Gelar</label><input type="text" id="guruNama" required></div>
-              <div class="form-group"><label>Mapel Diampu</label><input type="text" id="guruMapel" placeholder="Contoh: Bahasa Indonesia" required></div>
+              <div class="form-group">
+                <label>Mapel Diampu (Dari Master Mapel)</label>
+                <select id="guruMapelSelect" required>
+                  <option value="">-- Pilih Mapel --</option>
+                </select>
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Tambah Guru</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpanGuru"><i class="fa-solid fa-plus"></i> Tambah Guru</button>
           </form>
 
           <div class="table-container">
@@ -688,11 +694,12 @@
           </div>
 
           <form id="formInputMapel" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+            <input type="hidden" id="editMapelOldKode">
             <div class="form-row">
               <div class="form-group"><label>Kode Mapel</label><input type="text" id="mapelKode" placeholder="BINDO" required></div>
               <div class="form-group"><label>Nama Mata Pelajaran</label><input type="text" id="mapelNama" placeholder="Bahasa Indonesia" required></div>
             </div>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Tambah Mapel</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpanMapel"><i class="fa-solid fa-plus"></i> Tambah Mapel</button>
           </form>
 
           <div class="table-container">
@@ -720,6 +727,7 @@
           </div>
 
           <form id="formInputJadwal" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+            <input type="hidden" id="editJadwalId">
             <div class="form-row">
               <div class="form-group">
                 <label>Pilih Event Ujian Induk</label>
@@ -751,7 +759,7 @@
                 </div>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpanJadwal"><i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token</button>
           </form>
 
           <div class="table-container">
@@ -802,7 +810,7 @@
     </main>
   </div>
 
-  <!-- MODAL POPUP LOGIN ADMIN -->
+  <!-- MODAL LOGIN ADMIN -->
   <div class="modal-overlay" id="loginModal">
     <div class="modal-card">
       <button class="close-modal" onclick="toggleModal('loginModal')"><i class="fa-solid fa-xmark"></i></button>
@@ -823,7 +831,7 @@
     </div>
   </div>
 
-  <!-- MODAL POPUP EDIT PROFIL & PASSWORD ADMIN -->
+  <!-- MODAL PROFIL & PASSWORD ADMIN -->
   <div class="modal-overlay" id="profilModal">
     <div class="modal-card">
       <button class="close-modal" onclick="toggleModal('profilModal')"><i class="fa-solid fa-xmark"></i></button>
@@ -846,7 +854,6 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
   <footer>
     <img src="../Assets/aip 1.png" alt="Logo AIP Cloud">
     <p>&copy; 2026 AIP CLOUD - MTs Al Ishlah Panambangan</p>
@@ -857,13 +864,11 @@
     import { db } from '../Assets/firebase.js';
     import { doc, getDoc, setDoc, updateDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // GLOBAL STATE
     window.toggleModal = function(id) {
       const el = document.getElementById(id);
       el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
     };
 
-    // USER DROPDOWN TOGGLE
     const userMenuBtn = document.getElementById('userMenuBtn');
     const userDropdown = document.getElementById('userDropdown');
     userMenuBtn?.addEventListener('click', (e) => {
@@ -872,7 +877,6 @@
     });
     window.addEventListener('click', () => userDropdown?.classList.remove('show'));
 
-    // SWITCH TAB MENU SIDEBAR
     window.switchTab = function(tabName) {
       document.querySelectorAll('.sidebar-menu-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(pane => pane.style.display = 'none');
@@ -887,7 +891,6 @@
       if (tabName === 'jadwal') loadDataJadwal();
     };
 
-    // 1. INIT ADMIN ACCOUNT DEFAULT
     async function initAdminAccount() {
       try {
         const adminRef = doc(db, "admins", "admin");
@@ -903,7 +906,6 @@
     }
     initAdminAccount();
 
-    // CHECK SESSION LOGGED IN
     function checkSession() {
       const session = JSON.parse(localStorage.getItem('adminSession'));
       if (session && session.isLoggedIn) {
@@ -923,7 +925,6 @@
     }
     checkSession();
 
-    // LOGIN EVENT
     document.getElementById('openModalBtn')?.addEventListener('click', () => toggleModal('loginModal'));
     document.getElementById('openLoginModalNav')?.addEventListener('click', () => toggleModal('loginModal'));
 
@@ -957,13 +958,11 @@
       }
     });
 
-    // LOGOUT EVENT
     document.getElementById('btnLogout').addEventListener('click', () => {
       localStorage.removeItem('adminSession');
       checkSession();
     });
 
-    // EDIT PROFIL & PASSWORD ADMIN
     document.getElementById('btnOpenProfilModal').addEventListener('click', () => toggleModal('profilModal'));
     document.getElementById('formGantiProfil').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -985,18 +984,34 @@
       } catch (err) { alert("Gagal menyimpan profil."); }
     });
 
-    // --- MODUL BERANDA (EVENT UJIAN) ---
+    // --- 1. MODUL BERANDA (EVENT UJIAN) ---
     document.getElementById('formBuatUjian').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = document.getElementById('editUjianId').value;
       const nama = document.getElementById('namaUjianInput').value;
       const tglMulai = document.getElementById('tglMulaiInput').value;
       const tglSelesai = document.getElementById('tglSelesaiInput').value;
-      const id = 'ujian_' + Date.now();
+      const id = editId ? editId : 'ujian_' + Date.now();
 
       await setDoc(doc(db, "ujian", id), { id, nama, tglMulai, tglSelesai });
       document.getElementById('formBuatUjian').reset();
+      document.getElementById('editUjianId').value = '';
+      document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Event Ujian`;
       loadDataBeranda();
     });
+
+    window.editUjian = async function(id) {
+      const snap = await getDoc(doc(db, "ujian", id));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('editUjianId').value = d.id;
+        document.getElementById('namaUjianInput').value = d.nama;
+        document.getElementById('tglMulaiInput').value = d.tglMulai;
+        document.getElementById('tglSelesaiInput').value = d.tglSelesai;
+        document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-pen"></i> Update Event Ujian`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
 
     async function loadDataBeranda() {
       const tbody = document.getElementById('tableUjianBody');
@@ -1025,7 +1040,7 @@
             <td>${statusBadge}</td>
             <td>
               <div class="action-btns">
-                <button class="btn btn-warning" onclick="editItem('ujian', '${item.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-warning" onclick="editUjian('${item.id}')"><i class="fa-solid fa-pen"></i></button>
                 <button class="btn btn-danger" onclick="deleteItem('ujian', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
@@ -1036,12 +1051,11 @@
       document.getElementById('statUjianAktif').innerText = countAktif;
       document.getElementById('statUjianSelesai').innerText = countSelesai;
 
-      // Update Guru Count
       const guruSnap = await getDocs(collection(db, "gurus"));
       document.getElementById('statTotalGuru').innerText = guruSnap.size;
     }
 
-    // --- MODUL DATA SISWA ---
+    // --- 2. MODUL DATA SISWA ---
     document.getElementById('formInputSiswa').addEventListener('submit', async (e) => {
       e.preventDefault();
       const u = document.getElementById('siswaUser').value.trim();
@@ -1051,8 +1065,24 @@
 
       await setDoc(doc(db, "siswas", u), { username: u, password: p, nama, kelas });
       document.getElementById('formInputSiswa').reset();
+      document.getElementById('siswaUser').disabled = false;
+      document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-user-plus"></i> Tambah Siswa`;
       loadDataSiswa();
     });
+
+    window.editSiswa = async function(username) {
+      const snap = await getDoc(doc(db, "siswas", username));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('siswaUser').value = d.username;
+        document.getElementById('siswaUser').disabled = true;
+        document.getElementById('siswaPass').value = d.password;
+        document.getElementById('siswaNama').value = d.nama;
+        document.getElementById('siswaKelas').value = d.kelas;
+        document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-pen"></i> Update Siswa`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
 
     async function loadDataSiswa() {
       const tbody = document.getElementById('tableSiswaBody');
@@ -1070,6 +1100,7 @@
             <td>${item.password}</td>
             <td>
               <div class="action-btns">
+                <button class="btn btn-warning" onclick="editSiswa('${item.username}')"><i class="fa-solid fa-pen"></i></button>
                 <button class="btn btn-danger" onclick="deleteItem('siswas', '${item.username}')"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
@@ -1078,7 +1109,6 @@
       });
     }
 
-    // IMPORT EXCEL SISWA
     window.downloadTemplateSiswa = function() {
       const ws = XLSX.utils.json_to_sheet([
         { NISN: "12345678", Nama: "Ahmad Rifai", Kelas: "Kelas 7", Password: "123" }
@@ -1092,11 +1122,7 @@
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.onload = async (evt) => {
-        const bstr = evt.target.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
-        const wsname = wb.SheetNames[0];
-        const data = XLSX.utils.sheet_to_json(wb.Sheets[wsname]);
-
+        const data = XLSX.utils.sheet_to_json(XLSX.read(evt.target.result, { type: 'binary' }).Sheets[XLSX.read(evt.target.result, { type: 'binary' }).SheetNames[0]]);
         for (let row of data) {
           if (row.NISN && row.Nama) {
             await setDoc(doc(db, "siswas", String(row.NISN)), {
@@ -1113,20 +1139,48 @@
       reader.readAsBinaryString(file);
     };
 
-    // --- MODUL DATA GURU ---
+    // --- 3. MODUL DATA GURU ---
+    async function populateGuruMapelDropdown() {
+      const sel = document.getElementById('guruMapelSelect');
+      sel.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+      const snap = await getDocs(collection(db, "mapels"));
+      snap.forEach(d => {
+        const m = d.data();
+        sel.innerHTML += `<option value="${m.nama}">${m.nama} (${m.kode})</option>`;
+      });
+    }
+
     document.getElementById('formInputGuru').addEventListener('submit', async (e) => {
       e.preventDefault();
       const u = document.getElementById('guruUser').value.trim();
       const p = document.getElementById('guruPass').value.trim();
       const nama = document.getElementById('guruNama').value.trim();
-      const mapel = document.getElementById('guruMapel').value.trim();
+      const mapel = document.getElementById('guruMapelSelect').value;
 
       await setDoc(doc(db, "gurus", u), { username: u, password: p, nama, mapel });
       document.getElementById('formInputGuru').reset();
+      document.getElementById('guruUser').disabled = false;
+      document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Guru`;
       loadDataGuru();
     });
 
+    window.editGuru = async function(username) {
+      await populateGuruMapelDropdown();
+      const snap = await getDoc(doc(db, "gurus", username));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('guruUser').value = d.username;
+        document.getElementById('guruUser').disabled = true;
+        document.getElementById('guruPass').value = d.password;
+        document.getElementById('guruNama').value = d.nama;
+        document.getElementById('guruMapelSelect').value = d.mapel;
+        document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-pen"></i> Update Guru`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
     async function loadDataGuru() {
+      await populateGuruMapelDropdown();
       const tbody = document.getElementById('tableGuruBody');
       tbody.innerHTML = '';
       const snap = await getDocs(collection(db, "gurus"));
@@ -1141,6 +1195,7 @@
             <td>${item.mapel}</td>
             <td>
               <div class="action-btns">
+                <button class="btn btn-warning" onclick="editGuru('${item.username}')"><i class="fa-solid fa-pen"></i></button>
                 <button class="btn btn-danger" onclick="deleteItem('gurus', '${item.username}')"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
@@ -1149,16 +1204,67 @@
       });
     }
 
-    // --- MODUL MAPEL ---
+    window.downloadTemplateGuru = function() {
+      const ws = XLSX.utils.json_to_sheet([
+        { Username: "guru_indo", Password: "123", Nama: "Siti Nurjanah, S.Pd.", Mapel: "Bahasa Indonesia" }
+      ]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Template_Guru");
+      XLSX.writeFile(wb, "template tambah guru.xlsx");
+    };
+
+    window.importGuruExcel = function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        const data = XLSX.utils.sheet_to_json(XLSX.read(evt.target.result, { type: 'binary' }).Sheets[XLSX.read(evt.target.result, { type: 'binary' }).SheetNames[0]]);
+        for (let row of data) {
+          if (row.Username && row.Nama) {
+            await setDoc(doc(db, "gurus", String(row.Username)), {
+              username: String(row.Username),
+              password: String(row.Password || "123"),
+              nama: row.Nama,
+              mapel: row.Mapel || ""
+            });
+          }
+        }
+        alert("Import Data Guru Berhasil!");
+        loadDataGuru();
+      };
+      reader.readAsBinaryString(file);
+    };
+
+    // --- 4. MODUL MAPEL ---
     document.getElementById('formInputMapel').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const oldKode = document.getElementById('editMapelOldKode').value;
       const kode = document.getElementById('mapelKode').value.trim().toUpperCase();
       const nama = document.getElementById('mapelNama').value.trim();
 
+      if (oldKode && oldKode !== kode) {
+        await deleteDoc(doc(db, "mapels", oldKode));
+      }
+
       await setDoc(doc(db, "mapels", kode), { kode, nama });
       document.getElementById('formInputMapel').reset();
+      document.getElementById('editMapelOldKode').value = '';
+      document.getElementById('mapelKode').disabled = false;
+      document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Mapel`;
       loadDataMapel();
     });
+
+    window.editMapel = async function(kode) {
+      const snap = await getDoc(doc(db, "mapels", kode));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('editMapelOldKode').value = d.kode;
+        document.getElementById('mapelKode').value = d.kode;
+        document.getElementById('mapelKode').disabled = true;
+        document.getElementById('mapelNama').value = d.nama;
+        document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-pen"></i> Update Mapel`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
 
     async function loadDataMapel() {
       const tbody = document.getElementById('tableMapelBody');
@@ -1174,6 +1280,7 @@
             <td>${item.nama}</td>
             <td>
               <div class="action-btns">
+                <button class="btn btn-warning" onclick="editMapel('${item.kode}')"><i class="fa-solid fa-pen"></i></button>
                 <button class="btn btn-danger" onclick="deleteItem('mapels', '${item.kode}')"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
@@ -1182,7 +1289,7 @@
       });
     }
 
-    // --- MODUL JADWAL & TOKEN ---
+    // --- 5. MODUL JADWAL & TOKEN ---
     window.generateRandomToken = function() {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let token = '';
@@ -1207,7 +1314,8 @@
 
     document.getElementById('formInputJadwal').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const id = 'jdwl_' + Date.now();
+      const editId = document.getElementById('editJadwalId').value;
+      const id = editId ? editId : 'jdwl_' + Date.now();
       const data = {
         id,
         ujian: document.getElementById('jadwalUjianSelect').value,
@@ -1221,11 +1329,31 @@
 
       await setDoc(doc(db, "jadwals", id), data);
       document.getElementById('formInputJadwal').reset();
+      document.getElementById('editJadwalId').value = '';
+      document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token`;
       loadDataJadwal();
     });
 
+    window.editJadwal = async function(id) {
+      await populateJadwalSelects();
+      const snap = await getDoc(doc(db, "jadwals", id));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('editJadwalId').value = d.id;
+        document.getElementById('jadwalUjianSelect').value = d.ujian;
+        document.getElementById('jadwalMapelSelect').value = d.mapel;
+        document.getElementById('jadwalTingkatSelect').value = d.tingkat;
+        document.getElementById('jadwalTgl').value = d.tgl;
+        document.getElementById('jadwalJamMulai').value = d.jamMulai;
+        document.getElementById('jadwalJamSelesai').value = d.jamSelesai;
+        document.getElementById('jadwalToken').value = d.token;
+        document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-pen"></i> Update Jadwal`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
     async function loadDataJadwal() {
-      populateJadwalSelects();
+      await populateJadwalSelects();
       const tbody = document.getElementById('tableJadwalBody');
       tbody.innerHTML = '';
       const snap = await getDocs(collection(db, "jadwals"));
@@ -1241,6 +1369,7 @@
             <td><strong style="color:#0d3b36; font-size:1.1rem">${item.token}</strong></td>
             <td>
               <div class="action-btns">
+                <button class="btn btn-warning" onclick="editJadwal('${item.id}')"><i class="fa-solid fa-pen"></i></button>
                 <button class="btn btn-danger" onclick="deleteItem('jadwals', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
@@ -1249,7 +1378,7 @@
       });
     }
 
-    // --- UTILITY DELETE & CLEAR ALL DATA ---
+    // --- UTILITY DELETE & CLEAR ALL ---
     window.deleteItem = async function(coll, id) {
       if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
         await deleteDoc(doc(db, coll, id));
@@ -1262,7 +1391,7 @@
     };
 
     window.clearAllData = async function(coll) {
-      if (confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus SELURUH DATA pada koleksi '${coll}'? Action ini tidak bisa dibatalkan!`)) {
+      if (confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus SELURUH DATA pada koleksi '${coll}'?`)) {
         const snap = await getDocs(collection(db, coll));
         for (let d of snap.docs) {
           await deleteDoc(doc(db, coll, d.id));
