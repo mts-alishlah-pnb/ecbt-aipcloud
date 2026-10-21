@@ -295,9 +295,9 @@
           <input type="text" id="confKelasRombel" placeholder="Misal: VIII A" required>
         </div>
         <div class="form-group">
-          <label>Pilih Mata Pelajaran Ujian</label>
+          <label>Pilih Mata Pelajaran &amp; Sesi Ujian Aktif</label>
           <select id="confMapelSelect" required>
-            <option value="">-- Pilih Mata Pelajaran --</option>
+            <option value="">-- Pilih Sesi Ujian Aktif --</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
@@ -330,17 +330,22 @@
   <!-- INTEGRASI FIREBASE & LOGIKA SISWA -->
   <script type="module">
     import { db } from '../Assets/firebase.js';
-    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // CHECK SESSION
-    function checkSiswaSession() {
+    async function checkSiswaSession() {
       const session = JSON.parse(localStorage.getItem('siswaSession'));
       if (session && session.isLoggedIn) {
         document.getElementById('sectionLogin').style.display = 'none';
         document.getElementById('navSiswaProfile').style.display = 'block';
         document.getElementById('headerSiswaName').innerText = session.nama;
         
-        // Cek apakah sedang dalam sesi ujian aktif
+        // Ambil data terbaru siswa dari database untuk memeriksa riwayat ujian selesai
+        const siswaSnap = await getDoc(doc(db, "siswas", session.username));
+        if (siswaSnap.exists()) {
+          session.ujianSelesai = siswaSnap.data().ujianSelesai || [];
+        }
+
         const activeExam = JSON.parse(localStorage.getItem('activeExamSession'));
         if (activeExam) {
           bukaWorkspaceUjian(activeExam.judul, activeExam.mapel, activeExam.linkGForm);
@@ -375,7 +380,8 @@
           localStorage.setItem('siswaSession', JSON.stringify({
             username: data.username,
             nama: data.nama,
-            kelasTingkat: data.kelas, // misal: "Kelas 8"
+            kelasTingkat: data.kelas,
+            ujianSelesai: data.ujianSelesai || [],
             isLoggedIn: true
           }));
           checkSiswaSession();
@@ -392,23 +398,34 @@
       }
     });
 
-    // BUKA HALAMAN KONFIRMASI & LOAD MAPEL SESUAI TINGKAT
+    // BUKA HALAMAN KONFIRMASI & HANYA LOAD SESI UJIAN YANG AKTIF OLEH ADMIN
     async function bukaHalamanKonfirmasi(session) {
       document.getElementById('sectionKonfirmasi').style.display = 'block';
       document.getElementById('confNama').value = session.nama;
       document.getElementById('confTingkat').value = session.kelasTingkat;
 
       const mapelSel = document.getElementById('confMapelSelect');
-      mapelSel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
+      mapelSel.innerHTML = '<option value="">-- Pilih Sesi Ujian Aktif --</option>';
 
-      // Ambil bank soal / jadwal yang sesuai dengan tingkat siswa
+      // Ambil jadwal yang tingkatnya sesuai dan statusAktif-nya true (diaktifkan admin)
       const jadwalSnap = await getDocs(collection(db, "jadwals"));
+      let adaSesiAktif = false;
+
       jadwalSnap.forEach(d => {
         const j = d.data();
-        if (j.tingkat === session.kelasTingkat || j.tingkat === "Semua Kelas") {
-          mapelSel.innerHTML += `<option value="${j.mapel}">${j.mapel} (${j.ujian})</option>`;
+        const tingkatCocok = (j.tingkat === session.kelasTingkat || j.tingkat === "Semua Kelas");
+        const sudahDikerjakan = (session.ujianSelesai || []).includes(j.id);
+
+        // Hanya tampilkan jika aktif, sesuai tingkat, dan belum pernah dikerjakan oleh siswa ini
+        if (tingkatCocok && j.statusAktif && !sudahDikerjakan) {
+          adaSesiAktif = true;
+          mapelSel.innerHTML += `<option value="${j.id}">${j.mapel} - ${j.ujian} (${j.tingkat})</option>`;
         }
       });
+
+      if (!adaSesiAktif) {
+        mapelSel.innerHTML = '<option value="">-- Tidak ada sesi ujian aktif saat ini --</option>';
+      }
     }
 
     // PROSES VALIDASI & MULAI UJIAN
@@ -417,13 +434,19 @@
       const session = JSON.parse(localStorage.getItem('siswaSession'));
       const namaBaru = document.getElementById('confNama').value.trim();
       const kelasRombel = document.getElementById('confKelasRombel').value.trim();
-      const selectedMapel = document.getElementById('confMapelSelect').value;
+      const selectedJadwalId = document.getElementById('confMapelSelect').value;
       const inputToken = document.getElementById('confToken').value.trim().toUpperCase();
       const errBox = document.getElementById('konfirmasiError');
 
       errBox.style.display = 'none';
 
-      // VALIDASI 1: Aturan Format Kelas Romawi (Contoh valid: VII A, VIII B, IX C, VII-A, dll)
+      if (!selectedJadwalId) {
+        errBox.innerText = "Silakan pilih salah satu sesi ujian aktif.";
+        errBox.style.display = 'block';
+        return;
+      }
+
+      // VALIDASI 1: Aturan Format Kelas Romawi
       const romawiRegex = /^(VII|VIII|IX|X|XI|XII)(\s|-)?([A-Z0-9]+)$/i;
       if (!romawiRegex.test(kelasRombel)) {
         errBox.innerHTML = `<strong>Format Kelas Tidak Sesuai!</strong> Penulisan kelas wajib menggunakan angka Romawi (Contoh: <em>VII A, VIII B, atau IX A</em>).`;
@@ -432,33 +455,33 @@
       }
 
       try {
-        // Cari jadwal berdasarkan mapel & tingkat
-        const jadwalSnap = await getDocs(collection(db, "jadwals"));
-        let targetJadwal = null;
-
-        jadwalSnap.forEach(d => {
-          const j = d.data();
-          if (j.mapel === selectedMapel && (j.tingkat === session.kelasTingkat || j.tingkat === "Semua Kelas")) {
-            targetJadwal = j;
-          }
-        });
-
-        if (!targetJadwal) {
-          errBox.innerText = "Jadwal ujian untuk mata pelajaran tersebut tidak ditemukan.";
+        // Ambil data jadwal spesifik berdasarkan pilihan dropdown
+        const jadwalSnap = await getDoc(doc(db, "jadwals", selectedJadwalId));
+        if (!jadwalSnap.exists()) {
+          errBox.innerText = "Sesi ujian tidak ditemukan.";
           errBox.style.display = 'block';
           return;
         }
 
-        // VALIDASI 2: Cek Status Sesi Aktif oleh Admin
+        const targetJadwal = jadwalSnap.data();
+
+        // VALIDASI 2: Cek apakah token sudah pernah digunakan (sudah ada di riwayat selesai siswa)
+        if ((session.ujianSelesai || []).includes(targetJadwal.id)) {
+          errBox.innerHTML = `<strong>Token Sudah Digunakan!</strong> Anda sudah pernah menyelesaikan ujian untuk sesi <em>${targetJadwal.mapel} (${targetJadwal.ujian})</em>. Token ini tidak dapat digunakan kembali.`;
+          errBox.style.display = 'block';
+          return;
+        }
+
+        // VALIDASI 3: Cek Status Sesi Aktif oleh Admin
         if (!targetJadwal.statusAktif) {
-          errBox.innerHTML = `<strong>Sesi Belum Dibuka!</strong> Pengawas atau Admin belum mengaktifkan sesi ujian untuk mapel <em>${selectedMapel}</em>. Silakan tunggu instruksi selanjutnya.`;
+          errBox.innerHTML = `<strong>Sesi Ditutup!</strong> Pengawas atau Admin telah menonaktifkan sesi ujian ini.`;
           errBox.style.display = 'block';
           return;
         }
 
-        // VALIDASI 3: Cek Kesesuaian Token
+        // VALIDASI 4: Cek Kesesuaian Token
         if (targetJadwal.token !== inputToken) {
-          errBox.innerHTML = `<strong>Token Salah!</strong> Token ujian yang Anda masukkan untuk mapel <em>${selectedMapel}</em> tidak valid. Periksa kembali token dari pengawas.`;
+          errBox.innerHTML = `<strong>Token Salah!</strong> Token ujian yang Anda masukkan tidak valid.`;
           errBox.style.display = 'block';
           return;
         }
@@ -469,7 +492,7 @@
 
         soalSnap.forEach(d => {
           const s = d.data();
-          if (s.mapel === selectedMapel && s.tingkat === session.kelasTingkat) {
+          if (s.mapel === targetJadwal.mapel && s.tingkat === session.kelasTingkat) {
             linkGForm = s.linkGForm;
           }
         });
@@ -480,20 +503,21 @@
           return;
         }
 
-        // Simpan sesi aktif ujian siswa
+        // Simpan sesi aktif ujian siswa beserta ID jadwalnya
         const examSessionData = {
+          jadwalId: targetJadwal.id,
           judul: targetJadwal.ujian,
-          mapel: selectedMapel,
+          mapel: targetJadwal.mapel,
           linkGForm: linkGForm
         };
         localStorage.setItem('activeExamSession', JSON.stringify(examSessionData));
 
-        // Update nama siswa di session jika ada perubahan edit
+        // Update nama siswa & kelas romawi di session
         session.nama = namaBaru;
         session.kelasRombel = kelasRombel;
         localStorage.setItem('siswaSession', JSON.stringify(session));
 
-        bukaWorkspaceUjian(targetJadwal.ujian, selectedMapel, linkGForm);
+        bukaWorkspaceUjian(targetJadwal.ujian, targetJadwal.mapel, linkGForm);
 
       } catch (err) {
         errBox.innerText = "Terjadi kesalahan saat memvalidasi ujian.";
@@ -511,9 +535,37 @@
       document.getElementById('iframeGoogleForm').src = linkGForm;
     }
 
-    window.keluarUjian = function() {
-      if (confirm("Apakah Anda yakin ingin keluar dari halaman ujian?")) {
+    // TOMBOL KELUAR / SELESAI: Masukkan ke riwayat selesai & arahkan ke halaman login
+    window.keluarUjian = async function() {
+      if (confirm("Apakah Anda yakin telah selesai mengerjakan dan ingin keluar? Token untuk ujian ini tidak akan bisa digunakan kembali.")) {
+        const session = JSON.parse(localStorage.getItem('siswaSession'));
+        const activeExam = JSON.parse(localStorage.getItem('activeExamSession'));
+
+        if (session && activeExam && activeExam.jadwalId) {
+          if (!session.ujianSelesai) session.ujianSelesai = [];
+          if (!session.ujianSelesai.includes(activeExam.jadwalId)) {
+            session.ujianSelesai.push(activeExam.jadwalId);
+          }
+
+          // Simpan ke database Firestore agar permanen tercatat
+          try {
+            await setDoc(doc(db, "siswas", session.username), {
+              username: session.username,
+              nama: session.nama,
+              kelas: session.kelasTingkat,
+              password: session.password || "", // Menjaga integritas data jika diperlukan
+              ujianSelesai: session.ujianSelesai
+            }, { merge: true });
+          } catch (e) {
+            console.error("Gagal memperbarui riwayat ujian siswa:", e);
+          }
+
+          localStorage.setItem('siswaSession', JSON.stringify(session));
+        }
+
+        // Hapus sesi ujian aktif & sesi login, lalu kembalikan ke halaman login
         localStorage.removeItem('activeExamSession');
+        localStorage.removeItem('siswaSession');
         checkSiswaSession();
       }
     };
