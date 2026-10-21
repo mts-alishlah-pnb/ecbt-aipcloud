@@ -554,10 +554,10 @@
       </button>
       
       <div style="font-size: 0.7rem; font-weight: 800; color: #64748b; margin-top: 15px; padding-left: 10px; text-transform: uppercase;">
-        Mapel Diampu
+        Mapel &amp; Tingkat Diampu
       </div>
       
-      <!-- MENU MAPEL DAN TINGKAT KELAS DILUAT SECARA DINAMIS -->
+      <!-- MENU MAPEL DAN TINGKAT KELAS SPESIFIK DIBUAT SECARA DINAMIS DARI ADMIN -->
       <div id="dynamicSidebarMapelList"></div>
     </aside>
 
@@ -569,7 +569,7 @@
           <div class="stat-card">
             <div class="stat-icon mapel"><i class="fa-solid fa-book-open"></i></div>
             <div class="stat-info">
-              <h4>Mapel Diampu</h4>
+              <h4>Total Penugasan Mapel</h4>
               <p id="statTotalMapelGuru">0</p>
             </div>
           </div>
@@ -592,7 +592,7 @@
         <div class="content-card">
           <div class="card-title" style="margin-bottom: 15px;"><i class="fa-solid fa-chalkboard-user"></i> Selamat Datang</div>
           <p style="font-size: 0.9rem; color: #475569; line-height: 1.6;">
-            Silakan pilih <strong>Mata Pelajaran</strong> dan <strong>Tingkat Kelas</strong> pada sidebar di sebelah kiri untuk mengelola Bank Soal / Link Google Form serta melihat Jadwal Ujian khusus untuk kelas yang Anda ampu.
+            Silakan pilih <strong>Mata Pelajaran</strong> dan <strong>Tingkat Kelas</strong> spesifik pada sidebar di sebelah kiri (sesuai pengaturan Admin) untuk mengelola Bank Soal / Link Google Form serta melihat Jadwal Ujian Anda.
           </p>
         </div>
       </section>
@@ -613,7 +613,7 @@
             <div class="form-row">
               <div class="form-group" style="flex: 2;">
                 <label>Judul Soal / Ujian</label>
-                <input type="text" id="soalJudul" placeholder="Contoh: PTS Bahasa Indonesia Semester Ganjil" required>
+                <input type="text" id="soalJudul" placeholder="Contoh: PTS Informatika Kelas 7 Semester Ganjil" required>
               </div>
               <div class="form-group" style="flex: 2;">
                 <label>Link Google Form Soal</label>
@@ -722,7 +722,7 @@
   <!-- INTEGRASI LOGIKA & FIREBASE -->
   <script type="module">
     import { db } from '../Assets/firebase.js';
-    import { doc, getDoc, setDoc, updateDoc, collection, getDocs, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { doc, getDoc, setDoc, updateDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // GLOBAL STATE ACTIVE
     window.currentActiveMapel = '';
@@ -780,7 +780,6 @@
           localStorage.setItem('guruSession', JSON.stringify({
             username: u,
             nama: guruSnap.data().nama,
-            mapel: guruSnap.data().mapel,
             isLoggedIn: true
           }));
           toggleModal('loginModal');
@@ -824,23 +823,30 @@
       } catch (err) { alert("Gagal menyimpan profil."); }
     });
 
-    // SIDEBAR DYNAMIC GENERATOR
+    // SIDEBAR DYNAMIC GENERATOR (SESUAI SPESIFIK TINGKAT PER MAPEL DARI ADMIN)
     async function loadGuruSidebarAndData(username) {
       const guruSnap = await getDoc(doc(db, "gurus", username));
       if (!guruSnap.exists()) return;
 
       const guruData = guruSnap.data();
-      const mapelList = guruData.mapel ? guruData.mapel.split(',').map(s => s.trim()) : [];
-      document.getElementById('statTotalMapelGuru').innerText = mapelList.length;
+      let assignments = guruData.assignments || {};
 
-      // Ambil daftar Tingkat/Kelas dari master data Jadwal/Admin
-      const tingkatList = ["Kelas 7", "Kelas 8", "Kelas 9", "Olimpiade"];
+      // Backward compatibility jika data lama menggunakan format string koma
+      if (!guruData.assignments && guruData.mapel && guruData.tingkat) {
+        const mapels = guruData.mapel.split(",").map(s => s.trim());
+        const tings = guruData.tingkat.split(",").map(s => s.trim());
+        mapels.forEach(m => { assignments[m] = tings; });
+      }
+
+      const totalMapelCount = Object.keys(assignments).length;
+      document.getElementById('statTotalMapelGuru').innerText = totalMapelCount;
 
       const container = document.getElementById('dynamicSidebarMapelList');
       container.innerHTML = '';
 
-      mapelList.forEach((mapel, index) => {
-        const mapelId = `mapel_menu_${index}`;
+      let index = 0;
+      for (const [mapel, tingkatList] of Object.entries(assignments)) {
+        const mapelId = `mapel_menu_${index++}`;
         let subMenuHtml = '';
 
         tingkatList.forEach(tingkat => {
@@ -862,9 +868,13 @@
             </div>
           </div>
         `;
-      });
+      }
 
-      loadStatsCount(username);
+      if (totalMapelCount === 0) {
+        container.innerHTML = '<small style="color: #94a3b8; padding-left: 10px;">Belum ada penugasan mapel dari Admin.</small>';
+      }
+
+      loadStatsCount(username, assignments);
     }
 
     window.toggleSubMenu = function(id) {
@@ -915,7 +925,12 @@
       document.getElementById('editSoalId').value = '';
       document.getElementById('btnSimpanBankSoal').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Link Soal`;
       loadBankSoalData();
-      loadStatsCount(session.username);
+      
+      const guruSnap = await getDoc(doc(db, "gurus", session.username));
+      if (guruSnap.exists()) {
+        const assignments = guruSnap.data().assignments || {};
+        loadStatsCount(session.username, assignments);
+      }
     });
 
     async function loadBankSoalData() {
@@ -999,19 +1014,25 @@
     }
 
     // STATS COUNTER
-    async function loadStatsCount(username) {
+    async function loadStatsCount(username, assignments) {
       const soalSnap = await getDocs(collection(db, "bank_soal"));
       let countSoal = 0;
       soalSnap.forEach(d => { if (d.data().guruUser === username) countSoal++; });
       document.getElementById('statTotalBankSoal').innerText = countSoal;
 
-      const guruSnap = await getDoc(doc(db, "gurus", username));
+      const jdwlSnap = await getDocs(collection(db, "jadwals"));
       let countJadwal = 0;
-      if (guruSnap.exists()) {
-        const mapels = guruSnap.data().mapel ? guruSnap.data().mapel.split(',').map(s => s.trim()) : [];
-        const jdwlSnap = await getDocs(collection(db, "jadwals"));
-        jdwlSnap.forEach(d => { if (mapels.includes(d.data().mapel)) countJadwal++; });
-      }
+      const assignedMapels = Object.keys(assignments);
+
+      jdwlSnap.forEach(d => {
+        const j = d.data();
+        if (assignedMapels.includes(j.mapel)) {
+          const allowedTingkat = assignments[j.mapel] || [];
+          if (allowedTingkat.includes(j.tingkat) || j.tingkat === "Semua Kelas") {
+            countJadwal++;
+          }
+        }
+      });
       document.getElementById('statTotalJadwalGuru').innerText = countJadwal;
     }
   </script>
