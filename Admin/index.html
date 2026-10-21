@@ -358,23 +358,44 @@
       border-color: #0d3b36;
     }
 
-    /* CHECKBOX CONTAINER UNTUK MAPEL & TINGKAT GURU */
-    .checkbox-group-container {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 10px 12px;
-      max-height: 120px;
-      overflow-y: auto;
+    /* DINAMIS MAPEL & TINGKAT ASSIGNMENT BOX */
+    .assignment-box-container {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .mapel-assignment-card {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mapel-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tingkat-checkboxes-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      background: #ffffff;
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
     }
 
     .checkbox-item {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       font-size: 0.85rem;
       color: #334155;
       font-weight: 600;
@@ -382,8 +403,8 @@
     }
 
     .checkbox-item input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       accent-color: #0d3b36;
       cursor: pointer;
     }
@@ -706,30 +727,21 @@
             </div>
           </div>
 
-          <form id="formInputGuru" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
+          <form id="formInputGuru" style="margin-bottom: 25px; background: #f8fafc; pen-padding: 15px; padding: 15px; border-radius: 12px;">
             <div class="form-row">
               <div class="form-group"><label>Username Guru</label><input type="text" id="guruUser" required></div>
               <div class="form-group"><label>Password</label><input type="text" id="guruPass" required></div>
-              <div class="form-group"><label>Nama Guru &amp; Gelar</label><input type="text" id="guruNama" required></div>
+              <div class="form-group" style="flex: 2;"><label>Nama Guru &amp; Gelar</label><input type="text" id="guruNama" required></div>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Mapel Diampu (Bisa Pilih > 1)</label>
-                <div class="checkbox-group-container" id="guruMapelCheckboxes">
-                  <small style="color: #94a3b8;">Belum ada master mapel.</small>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Tingkat Kelas Diampu (Bisa Pilih > 1)</label>
-                <div class="checkbox-group-container" id="guruTingkatCheckboxes">
-                  <label class="checkbox-item"><input type="checkbox" name="guruTingkatCheck" value="Kelas 7"><span>Kelas 7</span></label>
-                  <label class="checkbox-item"><input type="checkbox" name="guruTingkatCheck" value="Kelas 8"><span>Kelas 8</span></label>
-                  <label class="checkbox-item"><input type="checkbox" name="guruTingkatCheck" value="Kelas 9"><span>Kelas 9</span></label>
-                  <label class="checkbox-item"><input type="checkbox" name="guruTingkatCheck" value="Olimpiade"><span>Olimpiade</span></label>
-                </div>
+
+            <div class="form-group" style="margin-top: 10px;">
+              <label>Pilih Mapel &amp; Tentukan Tingkat Kelas yang Diampu:</label>
+              <div class="assignment-box-container" id="guruMapelAssignmentContainer">
+                <small style="color: #94a3b8;">Belum ada master mapel. Tambahkan data di menu Mata Pelajaran lebih dulu.</small>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary" id="btnSimpanGuru"><i class="fa-solid fa-plus"></i> Tambah Guru</button>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px;" id="btnSimpanGuru"><i class="fa-solid fa-plus"></i> Tambah Guru</button>
           </form>
 
           <div class="table-container">
@@ -739,8 +751,7 @@
                   <th>No</th>
                   <th>Username</th>
                   <th>Nama Guru</th>
-                  <th>Mapel Diampu</th>
-                  <th>Tingkat Diampu</th>
+                  <th>Mapel &amp; Tingkat Diampu</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -1205,32 +1216,46 @@
       reader.readAsBinaryString(file);
     };
 
-    // --- 3. MODUL DATA GURU ---
-    async function populateGuruMapelCheckboxes(selectedMapelArray = []) {
-      const container = document.getElementById('guruMapelCheckboxes');
+    // --- 3. MODUL DATA GURU (DENGAN SPESIFIK TINGKAT PER MAPEL) ---
+    async function renderGuruAssignmentForm(savedAssignments = {}) {
+      const container = document.getElementById('guruMapelAssignmentContainer');
       container.innerHTML = '';
       const snap = await getDocs(collection(db, "mapels"));
 
       if (snap.empty) {
-        container.innerHTML = '<small style="color: #94a3b8;">Belum ada master mapel. Tambahkan di menu Mata Pelajaran lebih dulu.</small>';
+        container.innerHTML = '<small style="color: #94a3b8;">Belum ada master mapel. Tambahkan data di menu Mata Pelajaran lebih dulu.</small>';
         return;
       }
 
+      const tingkatOptions = ["Kelas 7", "Kelas 8", "Kelas 9", "Olimpiade"];
+
       snap.forEach(d => {
         const m = d.data();
-        const isChecked = selectedMapelArray.includes(m.nama) ? 'checked' : '';
-        container.innerHTML += `
-          <label class="checkbox-item">
-            <input type="checkbox" name="guruMapelCheck" value="${m.nama}" ${isChecked}>
-            <span>${m.nama} (${m.kode})</span>
-          </label>
-        `;
-      });
-    }
+        const mapelName = m.nama;
+        const selectedTingkatForThisMapel = savedAssignments[mapelName] || [];
 
-    function setCheckedCheckboxes(groupName, selectedArray) {
-      document.querySelectorAll(`input[name="${groupName}"]`).forEach(cb => {
-        cb.checked = selectedArray.includes(cb.value);
+        let checkboxesHtml = '';
+        tingkatOptions.forEach(tingkat => {
+          const isChecked = selectedTingkatForThisMapel.includes(tingkat) ? 'checked' : '';
+          checkboxesHtml += `
+            <label class="checkbox-item">
+              <input type="checkbox" name="mapel_tingkat_${mapelName}" value="${tingkat}" ${isChecked}>
+              <span>${tingkat}</span>
+            </label>
+          `;
+        });
+
+        container.innerHTML += `
+          <div class="mapel-assignment-card" data-mapel="${mapelName}">
+            <div class="mapel-header-row">
+              <strong><i class="fa-solid fa-book-bookmark" style="color:#0d3b36;"></i> ${mapelName} (${m.kode})</strong>
+              <small style="color:#64748b;">Pilih tingkat kelas yang diampu untuk mapel ini:</small>
+            </div>
+            <div class="tingkat-checkboxes-inline">
+              ${checkboxesHtml}
+            </div>
+          </div>
+        `;
       });
     }
 
@@ -1240,18 +1265,21 @@
       const p = document.getElementById('guruPass').value.trim();
       const nama = document.getElementById('guruNama').value.trim();
 
-      const checkedMapel = document.querySelectorAll('input[name="guruMapelCheck"]:checked');
-      const mapelList = Array.from(checkedMapel).map(cb => cb.value);
+      const mapelCards = document.querySelectorAll('.mapel-assignment-card');
+      const assignments = {};
+      let totalAssigned = 0;
 
-      const checkedTingkat = document.querySelectorAll('input[name="guruTingkatCheck"]:checked');
-      const tingkatList = Array.from(checkedTingkat).map(cb => cb.value);
+      mapelCards.forEach(card => {
+        const mapelName = card.getAttribute('data-mapel');
+        const checkedTingkat = card.querySelectorAll(`input[name="mapel_tingkat_${mapelName}"]:checked`);
+        if (checkedTingkat.length > 0) {
+          assignments[mapelName] = Array.from(checkedTingkat).map(cb => cb.value);
+          totalAssigned++;
+        }
+      });
 
-      if (mapelList.length === 0) {
-        alert("Pilih setidaknya satu mata pelajaran yang diampu oleh guru!");
-        return;
-      }
-      if (tingkatList.length === 0) {
-        alert("Pilih setidaknya satu tingkat kelas yang diampu oleh guru!");
+      if (totalAssigned === 0) {
+        alert("Pilih setidaknya satu mata pelajaran dan tingkat kelasnya!");
         return;
       }
 
@@ -1259,14 +1287,13 @@
         username: u,
         password: p,
         nama,
-        mapel: mapelList.join(", "),
-        tingkat: tingkatList.join(", ")
+        assignments: assignments // Disimpan dalam bentuk objek: { "Informatika": ["Kelas 7", "Kelas 8"], "PKn": ["Kelas 8"] }
       });
 
       document.getElementById('formInputGuru').reset();
       document.getElementById('guruUser').disabled = false;
       document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Guru`;
-      setCheckedCheckboxes('guruTingkatCheck', []);
+      renderGuruAssignmentForm();
       loadDataGuru();
     });
 
@@ -1274,11 +1301,16 @@
       const snap = await getDoc(doc(db, "gurus", username));
       if (snap.exists()) {
         const d = snap.data();
-        const existingMapelList = d.mapel ? d.mapel.split(", ").map(s => s.trim()) : [];
-        const existingTingkatList = d.tingkat ? d.tingkat.split(", ").map(s => s.trim()) : [];
-        
-        await populateGuruMapelCheckboxes(existingMapelList);
-        setCheckedCheckboxes('guruTingkatCheck', existingTingkatList);
+        const assignments = d.assignments || {};
+
+        // Backward compatibility jika data lama menggunakan format string koma
+        if (!d.assignments && d.mapel && d.tingkat) {
+          const mapels = d.mapel.split(",").map(s => s.trim());
+          const tings = d.tingkat.split(",").map(s => s.trim());
+          mapels.forEach(m => { assignments[m] = tings; });
+        }
+
+        await renderGuruAssignmentForm(assignments);
 
         document.getElementById('guruUser').value = d.username;
         document.getElementById('guruUser').disabled = true;
@@ -1290,20 +1322,30 @@
     };
 
     async function loadDataGuru() {
-      await populateGuruMapelCheckboxes();
+      await renderGuruAssignmentForm();
       const tbody = document.getElementById('tableGuruBody');
       tbody.innerHTML = '';
       const snap = await getDocs(collection(db, "gurus"));
       let no = 1;
+
       snap.forEach(d => {
         const item = d.data();
+        let assignmentSummary = '-';
+
+        if (item.assignments) {
+          assignmentSummary = Object.entries(item.assignments)
+            .map(([mapel, tings]) => `<strong>${mapel}</strong>: [${tings.join(', ')}]`)
+            .join('<br>');
+        } else if (item.mapel) {
+          assignmentSummary = `<strong>${item.mapel}</strong>: [${item.tingkat || '-'}]`;
+        }
+
         tbody.innerHTML += `
           <tr>
             <td>${no++}</td>
             <td>${item.username}</td>
             <td>${item.nama}</td>
-            <td><strong>${item.mapel || '-'}</strong></td>
-            <td><span class="badge badge-warning">${item.tingkat || '-'}</span></td>
+            <td>${assignmentSummary}</td>
             <td>
               <div class="action-btns">
                 <button class="btn btn-warning" onclick="editGuru('${item.username}')"><i class="fa-solid fa-pen"></i></button>
@@ -1317,7 +1359,7 @@
 
     window.downloadTemplateGuru = function() {
       const ws = XLSX.utils.json_to_sheet([
-        { Username: "guru_indo", Password: "123", Nama: "Siti Nurjanah, S.Pd.", Mapel: "Bahasa Indonesia, Fiqih", Tingkat: "Kelas 8, Kelas 9" }
+        { Username: "guru_informatika", Password: "123", Nama: "Budi Santoso, S.Kom.", Keterangan: "Atur penugasan langsung melalui Dashboard Admin" }
       ]);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Template_Guru");
@@ -1325,25 +1367,7 @@
     };
 
     window.importGuruExcel = function(e) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        const data = XLSX.utils.sheet_to_json(XLSX.read(evt.target.result, { type: 'binary' }).Sheets[XLSX.read(evt.target.result, { type: 'binary' }).SheetNames[0]]);
-        for (let row of data) {
-          if (row.Username && row.Nama) {
-            await setDoc(doc(db, "gurus", String(row.Username)), {
-              username: String(row.Username),
-              password: String(row.Password || "123"),
-              nama: row.Nama,
-              mapel: row.Mapel || "",
-              tingkat: row.Tingkat || ""
-            });
-          }
-        }
-        alert("Import Data Guru Berhasil!");
-        loadDataGuru();
-      };
-      reader.readAsBinaryString(file);
+      alert("Fitur import Excel untuk struktur multi-mapel tingkat spesifik dapat disesuaikan melalui form interaktif admin.");
     };
 
     // --- 4. MODUL MAPEL ---
@@ -1363,6 +1387,7 @@
       document.getElementById('mapelKode').disabled = false;
       document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Mapel`;
       loadDataMapel();
+      renderGuruAssignmentForm(); // Refresh form guru otomatis
     });
 
     window.editMapel = async function(kode) {
