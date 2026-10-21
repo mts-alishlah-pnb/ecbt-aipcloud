@@ -358,7 +358,6 @@
       border-color: #0d3b36;
     }
 
-    /* DINAMIS MAPEL & TINGKAT ASSIGNMENT BOX */
     .assignment-box-container {
       display: flex;
       flex-direction: column;
@@ -529,13 +528,13 @@
       </div>
     </div>
 
-    <!-- GUEST NAV (SEBELUM LOGIN) -->
+    <!-- GUEST NAV -->
     <nav id="navGuest">
       <a href="../index.html"><i class="fa-solid fa-house"></i> Beranda</a>
       <button class="btn btn-primary" id="openLoginModalNav"><i class="fa-solid fa-right-to-bracket"></i> Login Admin</button>
     </nav>
 
-    <!-- ADMIN NAV (SAAT LOGIN) -->
+    <!-- ADMIN NAV -->
     <div id="navAdmin" class="user-profile-menu" style="display: none;">
       <div class="user-info-btn" id="userMenuBtn">
         <div class="user-avatar"><i class="fa-solid fa-user-shield"></i></div>
@@ -727,7 +726,7 @@
             </div>
           </div>
 
-          <form id="formInputGuru" style="margin-bottom: 25px; background: #f8fafc; pen-padding: 15px; padding: 15px; border-radius: 12px;">
+          <form id="formInputGuru" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
             <div class="form-row">
               <div class="form-group"><label>Username Guru</label><input type="text" id="guruUser" required></div>
               <div class="form-group"><label>Password</label><input type="text" id="guruPass" required></div>
@@ -860,23 +859,27 @@
       <!-- MODUL 6: MONITORING & PELAKSANAAN UJIAN -->
       <section id="tab-monitoring" class="tab-pane" style="display: none;">
         <div class="content-card">
-          <div class="card-title" style="margin-bottom: 20px;"><i class="fa-solid fa-desktop"></i> Monitoring Sesi Ujian Real-Time</div>
+          <div class="card-title" style="margin-bottom: 20px;"><i class="fa-solid fa-desktop"></i> Pelaksanaan &amp; Monitoring Sesi Ujian</div>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+            Aktifkan sesi ujian untuk memvalidasi token siswa. Sesi akan otomatis tertutup saat jam selesai tercapai kecuali diaktifkan kembali secara manual.
+          </p>
 
           <div class="table-container">
             <table>
               <thead>
                 <tr>
                   <th>No</th>
-                  <th>Nama Siswa</th>
-                  <th>Kelas</th>
-                  <th>Mata Pelajaran</th>
+                  <th>Event Ujian / Mapel</th>
+                  <th>Target Kelas</th>
+                  <th>Waktu Sesi</th>
+                  <th>Token</th>
                   <th>Status Sesi</th>
-                  <th>Aksi Kontrol</th>
+                  <th>Kontrol Aktif/Non-Aktif</th>
                 </tr>
               </thead>
               <tbody id="tableMonitoringBody">
                 <tr>
-                  <td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada siswa yang sedang terhubung aktif.</td>
+                  <td colspan="7" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada jadwal sesi ujian.</td>
                 </tr>
               </tbody>
             </table>
@@ -966,6 +969,7 @@
       if (tabName === 'guru') loadDataGuru();
       if (tabName === 'mapel') loadDataMapel();
       if (tabName === 'jadwal') loadDataJadwal();
+      if (tabName === 'monitoring') loadDataMonitoring();
     };
 
     async function initAdminAccount() {
@@ -1216,7 +1220,7 @@
       reader.readAsBinaryString(file);
     };
 
-    // --- 3. MODUL DATA GURU (DENGAN SPESIFIK TINGKAT PER MAPEL) ---
+    // --- 3. MODUL DATA GURU ---
     async function renderGuruAssignmentForm(savedAssignments = {}) {
       const container = document.getElementById('guruMapelAssignmentContainer');
       container.innerHTML = '';
@@ -1287,7 +1291,7 @@
         username: u,
         password: p,
         nama,
-        assignments: assignments // Disimpan dalam bentuk objek: { "Informatika": ["Kelas 7", "Kelas 8"], "PKn": ["Kelas 8"] }
+        assignments: assignments
       });
 
       document.getElementById('formInputGuru').reset();
@@ -1303,7 +1307,6 @@
         const d = snap.data();
         const assignments = d.assignments || {};
 
-        // Backward compatibility jika data lama menggunakan format string koma
         if (!d.assignments && d.mapel && d.tingkat) {
           const mapels = d.mapel.split(",").map(s => s.trim());
           const tings = d.tingkat.split(",").map(s => s.trim());
@@ -1387,7 +1390,7 @@
       document.getElementById('mapelKode').disabled = false;
       document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Mapel`;
       loadDataMapel();
-      renderGuruAssignmentForm(); // Refresh form guru otomatis
+      renderGuruAssignmentForm();
     });
 
     window.editMapel = async function(kode) {
@@ -1461,7 +1464,8 @@
         tgl: document.getElementById('jadwalTgl').value,
         jamMulai: document.getElementById('jadwalJamMulai').value,
         jamSelesai: document.getElementById('jadwalJamSelesai').value,
-        token: document.getElementById('jadwalToken').value.toUpperCase()
+        token: document.getElementById('jadwalToken').value.toUpperCase(),
+        statusAktif: false // Default sesi non-aktif sebelum diaktifkan admin
       };
 
       await setDoc(doc(db, "jadwals", id), data);
@@ -1514,6 +1518,57 @@
         `;
       });
     }
+
+    // --- 6. MODUL MONITORING & PELAKSANAAN UJIAN ---
+    async function loadDataMonitoring() {
+      const tbody = document.getElementById('tableMonitoringBody');
+      tbody.innerHTML = '';
+      const snap = await getDocs(collection(db, "jadwals"));
+      let no = 1;
+      const now = new Date();
+      const currentTimeStr = now.toTimeString().slice(0, 5); // Format "HH:mm"
+      const currentDateStr = now.toISOString().split('T')[0];
+
+      for (let d of snap.docs) {
+        const item = d.data();
+        let statusAktif = item.statusAktif || false;
+
+        // Pengecekan otomatis: Jika tanggal hari ini sama dan jam sekarang melewati jamSelesai, otomatis non-aktifkan kecuali di-override
+        if (item.tgl === currentDateStr && currentTimeStr > item.jamSelesai && statusAktif) {
+          statusAktif = false;
+          await updateDoc(doc(db, "jadwals", item.id), { statusAktif: false });
+        }
+
+        const badgeStatus = statusAktif 
+          ? `<span class="badge badge-success" style="font-size:0.8rem;">SESI AKTIF (TOKEN VALID)</span>` 
+          : `<span class="badge badge-secondary" style="font-size:0.8rem;">NON-AKTIF</span>`;
+
+        const actionToggleBtn = statusAktif
+          ? `<button class="btn btn-danger" onclick="toggleSesiUjian('${item.id}', false)"><i class="fa-solid fa-lock"></i> Non-Aktifkan</button>`
+          : `<button class="btn btn-primary" onclick="toggleSesiUjian('${item.id}', true)"><i class="fa-solid fa-lock-open"></i> Aktifkan Sesi</button>`;
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${no++}</td>
+            <td><strong>${item.mapel}</strong><br><small style="color:#64748b">${item.ujian}</small></td>
+            <td><span class="badge badge-warning">${item.tingkat}</span></td>
+            <td>${item.tgl}<br><small>${item.jamMulai} - ${item.jamSelesai}</small></td>
+            <td><strong style="color:#0d3b36; font-size:1.1rem">${item.token}</strong></td>
+            <td>${badgeStatus}</td>
+            <td>${actionToggleBtn}</td>
+          </tr>
+        `;
+      }
+
+      if (no === 1) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada jadwal sesi ujian.</td></tr>`;
+      }
+    }
+
+    window.toggleSesiUjian = async function(id, newState) {
+      await updateDoc(doc(db, "jadwals", id), { statusAktif: newState });
+      loadDataMonitoring();
+    };
 
     // --- UTILITY DELETE & CLEAR ALL ---
     window.deleteItem = async function(coll, id) {
