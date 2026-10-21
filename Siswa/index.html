@@ -1,1 +1,524 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Siswa - E-CBT MTs Al Ishlah Panambangan</title>
+  
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER / NAVBAR */
+    header {
+      background-color: #0d3b36;
+      color: #ffffff;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand img {
+      height: 38px;
+      width: auto;
+    }
+
+    .brand-text h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+
+    .brand-text p {
+      font-size: 0.6rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    /* USER DROPDOWN / LOGOUT */
+    .user-profile-menu {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .user-info-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 6px 14px;
+      border-radius: 30px;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      background: #34d399;
+      color: #0d3b36;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+
+    /* CONTAINER UTAMA */
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card-box {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #0d3b36;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .form-group input, .form-group select {
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: #0d3b36;
+    }
+
+    .form-group input:disabled {
+      background-color: #f1f5f9;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .btn-primary { background: #0d3b36; color: #ffffff; }
+    .btn-primary:hover { background: #154d44; }
+    .btn-danger { background: #ef4444; color: #ffffff; }
+    .btn-danger:hover { background: #dc2626; }
+
+    .error-msg {
+      background: #fef2f2;
+      color: #dc2626;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      display: none;
+      border-left: 4px solid #dc2626;
+    }
+
+    /* TAMPILAN MENGERJAKAN UJIAN (FULLSCREEN RESPONSIVE) */
+    #ujianWorkspace {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      height: calc(100vh - 62px);
+    }
+
+    .ujian-header-bar {
+      background: #1e293b;
+      color: #ffffff;
+      padding: 10px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .iframe-container {
+      flex: 1;
+      width: 100%;
+      background: #e2e8f0;
+    }
+
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    footer {
+      background: linear-gradient(180deg, #ffffff 0%, #d1fae5 100%);
+      padding: 12px;
+      text-align: center;
+    }
+
+    footer img { height: 24px; }
+    footer p { font-size: 0.7rem; font-weight: 700; color: #334155; }
+
+    @media (max-width: 768px) {
+      .card-box { padding: 20px; }
+      .brand-text h1 { font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <img src="../Assets/mts.png" alt="Logo MTs Al Ishlah">
+      <div class="brand-text">
+        <h1>e - C B T</h1>
+        <p>PORTAL SISWA - CBT MANDIRI</p>
+      </div>
+    </div>
+
+    <div id="navSiswaProfile" class="user-profile-menu" style="display: none;">
+      <div class="user-info-btn">
+        <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
+        <span style="font-size: 0.8rem; font-weight: 700; color: #fff;" id="headerSiswaName">Siswa</span>
+        <button onclick="logoutSiswa()" style="background:none; border:none; color:#fca5a5; cursor:pointer; margin-left: 8px;" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- KONTEN UTAMA (DINAMIS SESUAI SESI) -->
+  <main>
+    
+    <!-- 1. HALAMAN LOGIN SISWA -->
+    <section id="sectionLogin" class="card-box">
+      <h2 class="card-title">Login Siswa</h2>
+      <div id="loginError" class="error-msg"></div>
+      <form id="siswaLoginForm">
+        <div class="form-group">
+          <label>Username / NISN</label>
+          <input type="text" id="loginUsername" placeholder="Masukkan NISN..." required>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Masukkan password..." required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btnSubmitLogin">Masuk Ke Portal Siswa</button>
+      </form>
+    </section>
+
+    <!-- 2. HALAMAN KONFIRMASI DATA DIRI & TOKEN -->
+    <section id="sectionKonfirmasi" class="card-box" style="display: none; max-width: 520px;">
+      <h2 class="card-title">Konfirmasi Data &amp; Token Ujian</h2>
+      <div id="konfirmasiError" class="error-msg"></div>
+      
+      <form id="formKonfirmasiUjian">
+        <div class="form-group">
+          <label>Nama Lengkap (Dapat diedit jika keliru)</label>
+          <input type="text" id="confNama" required>
+        </div>
+        <div class="form-group">
+          <label>Tingkat Kelas (Otomatis dari Data Admin - Terkunci)</label>
+          <input type="text" id="confTingkat" disabled>
+        </div>
+        <div class="form-group">
+          <label>Nama Kelas (Wajib Format Romawi, Contoh: VII A, VIII B, IX C)</label>
+          <input type="text" id="confKelasRombel" placeholder="Misal: VIII A" required>
+        </div>
+        <div class="form-group">
+          <label>Pilih Mata Pelajaran Ujian</label>
+          <select id="confMapelSelect" required>
+            <option value="">-- Pilih Mata Pelajaran --</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Token Ujian (6 Karakter dari Pengawas/Admin)</label>
+          <input type="text" id="confToken" placeholder="Ketik token..." style="text-transform: uppercase; font-weight: 800; letter-spacing: 2px;" maxlength="6" required>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-play"></i> Mulai Mengerjakan Ujian</button>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- 3. TAMPILAN MENGERJAKAN UJIAN (EMBED GOOGLE FORM) -->
+  <div id="ujianWorkspace">
+    <div class="ujian-header-bar">
+      <div><strong id="activeUjianTitle">Ujian</strong> | Mapel: <span id="activeUjianMapel" style="color:#34d399;"></span></div>
+      <button class="btn btn-danger" style="width: auto; padding: 6px 14px; font-size: 0.75rem;" onclick="keluarUjian()"><i class="fa-solid fa-right-from-bracket"></i> Keluar / Selesai</button>
+    </div>
+    <div class="iframe-container">
+      <iframe id="iframeGoogleForm" src="" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <img src="../Assets/aip 1.png" alt="Logo AIP Cloud">
+    <p>&copy; 2026 AIP CLOUD - MTs Al Ishlah Panambangan</p>
+  </footer>
+
+  <!-- INTEGRASI FIREBASE & LOGIKA SISWA -->
+  <script type="module">
+    import { db } from '../Assets/firebase.js';
+    import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // CHECK SESSION
+    function checkSiswaSession() {
+      const session = JSON.parse(localStorage.getItem('siswaSession'));
+      if (session && session.isLoggedIn) {
+        document.getElementById('sectionLogin').style.display = 'none';
+        document.getElementById('navSiswaProfile').style.display = 'block';
+        document.getElementById('headerSiswaName').innerText = session.nama;
+        
+        // Cek apakah sedang dalam sesi ujian aktif
+        const activeExam = JSON.parse(localStorage.getItem('activeExamSession'));
+        if (activeExam) {
+          bukaWorkspaceUjian(activeExam.judul, activeExam.mapel, activeExam.linkGForm);
+        } else {
+          bukaHalamanKonfirmasi(session);
+        }
+      } else {
+        document.getElementById('sectionLogin').style.display = 'block';
+        document.getElementById('sectionKonfirmasi').style.display = 'none';
+        document.getElementById('navSiswaProfile').style.display = 'none';
+        document.getElementById('ujianWorkspace').style.display = 'none';
+      }
+    }
+    checkSiswaSession();
+
+    // LOGIN SISWA
+    document.getElementById('siswaLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+      const errBox = document.getElementById('loginError');
+      const btn = document.getElementById('btnSubmitLogin');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...`;
+      errBox.style.display = 'none';
+
+      try {
+        const siswaSnap = await getDoc(doc(db, "siswas", u));
+        if (siswaSnap.exists() && siswaSnap.data().password === p) {
+          const data = siswaSnap.data();
+          localStorage.setItem('siswaSession', JSON.stringify({
+            username: data.username,
+            nama: data.nama,
+            kelasTingkat: data.kelas, // misal: "Kelas 8"
+            isLoggedIn: true
+          }));
+          checkSiswaSession();
+        } else {
+          errBox.innerText = "Username / NISN atau Password salah!";
+          errBox.style.display = 'block';
+        }
+      } catch (err) {
+        errBox.innerText = "Koneksi database bermasalah.";
+        errBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Masuk Ke Portal Siswa`;
+      }
+    });
+
+    // BUKA HALAMAN KONFIRMASI & LOAD MAPEL SESUAI TINGKAT
+    async function bukaHalamanKonfirmasi(session) {
+      document.getElementById('sectionKonfirmasi').style.display = 'block';
+      document.getElementById('confNama').value = session.nama;
+      document.getElementById('confTingkat').value = session.kelasTingkat;
+
+      const mapelSel = document.getElementById('confMapelSelect');
+      mapelSel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
+
+      // Ambil bank soal / jadwal yang sesuai dengan tingkat siswa
+      const jadwalSnap = await getDocs(collection(db, "jadwals"));
+      jadwalSnap.forEach(d => {
+        const j = d.data();
+        if (j.tingkat === session.kelasTingkat || j.tingkat === "Semua Kelas") {
+          mapelSel.innerHTML += `<option value="${j.mapel}">${j.mapel} (${j.ujian})</option>`;
+        }
+      });
+    }
+
+    // PROSES VALIDASI & MULAI UJIAN
+    document.getElementById('formKonfirmasiUjian').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const session = JSON.parse(localStorage.getItem('siswaSession'));
+      const namaBaru = document.getElementById('confNama').value.trim();
+      const kelasRombel = document.getElementById('confKelasRombel').value.trim();
+      const selectedMapel = document.getElementById('confMapelSelect').value;
+      const inputToken = document.getElementById('confToken').value.trim().toUpperCase();
+      const errBox = document.getElementById('konfirmasiError');
+
+      errBox.style.display = 'none';
+
+      // VALIDASI 1: Aturan Format Kelas Romawi (Contoh valid: VII A, VIII B, IX C, VII-A, dll)
+      const romawiRegex = /^(VII|VIII|IX|X|XI|XII)(\s|-)?([A-Z0-9]+)$/i;
+      if (!romawiRegex.test(kelasRombel)) {
+        errBox.innerHTML = `<strong>Format Kelas Tidak Sesuai!</strong> Penulisan kelas wajib menggunakan angka Romawi (Contoh: <em>VII A, VIII B, atau IX A</em>).`;
+        errBox.style.display = 'block';
+        return;
+      }
+
+      try {
+        // Cari jadwal berdasarkan mapel & tingkat
+        const jadwalSnap = await getDocs(collection(db, "jadwals"));
+        let targetJadwal = null;
+
+        jadwalSnap.forEach(d => {
+          const j = d.data();
+          if (j.mapel === selectedMapel && (j.tingkat === session.kelasTingkat || j.tingkat === "Semua Kelas")) {
+            targetJadwal = j;
+          }
+        });
+
+        if (!targetJadwal) {
+          errBox.innerText = "Jadwal ujian untuk mata pelajaran tersebut tidak ditemukan.";
+          errBox.style.display = 'block';
+          return;
+        }
+
+        // VALIDASI 2: Cek Status Sesi Aktif oleh Admin
+        if (!targetJadwal.statusAktif) {
+          errBox.innerHTML = `<strong>Sesi Belum Dibuka!</strong> Pengawas atau Admin belum mengaktifkan sesi ujian untuk mapel <em>${selectedMapel}</em>. Silakan tunggu instruksi selanjutnya.`;
+          errBox.style.display = 'block';
+          return;
+        }
+
+        // VALIDASI 3: Cek Kesesuaian Token
+        if (targetJadwal.token !== inputToken) {
+          errBox.innerHTML = `<strong>Token Salah!</strong> Token ujian yang Anda masukkan untuk mapel <em>${selectedMapel}</em> tidak valid. Periksa kembali token dari pengawas.`;
+          errBox.style.display = 'block';
+          return;
+        }
+
+        // CARI LINK GOOGLE FORM DARI BANK SOAL GURU
+        const soalSnap = await getDocs(collection(db, "bank_soal"));
+        let linkGForm = '';
+
+        soalSnap.forEach(d => {
+          const s = d.data();
+          if (s.mapel === selectedMapel && s.tingkat === session.kelasTingkat) {
+            linkGForm = s.linkGForm;
+          }
+        });
+
+        if (!linkGForm) {
+          errBox.innerText = "Link Google Form soal belum diunggah oleh Guru pengampu untuk tingkat ini.";
+          errBox.style.display = 'block';
+          return;
+        }
+
+        // Simpan sesi aktif ujian siswa
+        const examSessionData = {
+          judul: targetJadwal.ujian,
+          mapel: selectedMapel,
+          linkGForm: linkGForm
+        };
+        localStorage.setItem('activeExamSession', JSON.stringify(examSessionData));
+
+        // Update nama siswa di session jika ada perubahan edit
+        session.nama = namaBaru;
+        session.kelasRombel = kelasRombel;
+        localStorage.setItem('siswaSession', JSON.stringify(session));
+
+        bukaWorkspaceUjian(targetJadwal.ujian, selectedMapel, linkGForm);
+
+      } catch (err) {
+        errBox.innerText = "Terjadi kesalahan saat memvalidasi ujian.";
+        errBox.style.display = 'block';
+      }
+    });
+
+    function bukaWorkspaceUjian(judul, mapel, linkGForm) {
+      document.getElementById('sectionLogin').style.display = 'none';
+      document.getElementById('sectionKonfirmasi').style.display = 'none';
+      document.getElementById('ujianWorkspace').style.display = 'flex';
+
+      document.getElementById('activeUjianTitle').innerText = judul;
+      document.getElementById('activeUjianMapel').innerText = mapel;
+      document.getElementById('iframeGoogleForm').src = linkGForm;
+    }
+
+    window.keluarUjian = function() {
+      if (confirm("Apakah Anda yakin ingin keluar dari halaman ujian?")) {
+        localStorage.removeItem('activeExamSession');
+        checkSiswaSession();
+      }
+    };
+
+    window.logoutSiswa = function() {
+      if (confirm("Keluar dari akun siswa?")) {
+        localStorage.removeItem('siswaSession');
+        localStorage.removeItem('activeExamSession');
+        checkSiswaSession();
+      }
+    };
+  </script>
+
+</body>
+</html>
