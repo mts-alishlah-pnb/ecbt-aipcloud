@@ -510,22 +510,22 @@
 
     <!-- GUEST NAV (SEBELUM LOGIN) -->
     <nav id="navGuest">
-      <a href="../index.html"><i class="fa-solid fa-house"></i> Beranda[cite: 2]</a>
-      <button class="btn btn-primary" id="openLoginModalNav"><i class="fa-solid fa-right-to-bracket"></i> Login Admin[cite: 2]</button>
+      <a href="../index.html"><i class="fa-solid fa-house"></i> Beranda</a>
+      <button class="btn btn-primary" id="openLoginModalNav"><i class="fa-solid fa-right-to-bracket"></i> Login Admin</button>
     </nav>
 
     <!-- ADMIN NAV (SAAT LOGIN) -->
     <div id="navAdmin" class="user-profile-menu" style="display: none;">
       <div class="user-info-btn" id="userMenuBtn">
         <div class="user-avatar"><i class="fa-solid fa-user-shield"></i></div>
-        <span style="font-size: 0.85rem; font-weight: 700;" id="headerAdminName">Administrator[cite: 2]</span>
+        <span style="font-size: 0.85rem; font-weight: 700;" id="headerAdminName">Administrator</span>
         <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
       </div>
 
       <div class="dropdown-menu" id="userDropdown">
-        <button class="dropdown-item" id="btnOpenProfilModal"><i class="fa-solid fa-user-gear"></i> Profil &amp; Password[cite: 2]</button>
+        <button class="dropdown-item" id="btnOpenProfilModal"><i class="fa-solid fa-user-gear"></i> Profil &amp; Password</button>
         <hr style="border: 0; border-top: 1px solid #e2e8f0;">
-        <button class="dropdown-item text-danger" id="btnLogout"><i class="fa-solid fa-right-from-bracket"></i> Keluar / Logout[cite: 2]</button>
+        <button class="dropdown-item text-danger" id="btnLogout"><i class="fa-solid fa-right-from-bracket"></i> Keluar / Logout</button>
       </div>
     </div>
   </header>
@@ -541,7 +541,7 @@
 
     <div style="display: flex; justify-content: flex-end;">
       <button class="btn-login-admin" id="openModalBtn">
-        <i class="fa-solid fa-lock"></i> KLIK UNTUK LOGIN ADMIN[cite: 2]
+        <i class="fa-solid fa-lock"></i> KLIK UNTUK LOGIN ADMIN
       </button>
     </div>
   </main>
@@ -550,22 +550,22 @@
   <div id="dashboardWrapper">
     <aside class="sidebar">
       <button class="sidebar-menu-btn active" onclick="switchTab('beranda')">
-        <i class="fa-solid fa-house"></i> Beranda[cite: 2]
+        <i class="fa-solid fa-house"></i> Beranda
       </button>
       <button class="sidebar-menu-btn" onclick="switchTab('siswa')">
-        <i class="fa-solid fa-users"></i> Data Siswa[cite: 2]
+        <i class="fa-solid fa-users"></i> Data Siswa
       </button>
       <button class="sidebar-menu-btn" onclick="switchTab('guru')">
-        <i class="fa-solid fa-chalkboard-user"></i> Data Guru[cite: 2]
+        <i class="fa-solid fa-chalkboard-user"></i> Data Guru
       </button>
       <button class="sidebar-menu-btn" onclick="switchTab('mapel')">
-        <i class="fa-solid fa-book"></i> Mata Pelajaran[cite: 2]
+        <i class="fa-solid fa-book"></i> Mata Pelajaran
       </button>
       <button class="sidebar-menu-btn" onclick="switchTab('jadwal')">
-        <i class="fa-solid fa-calendar-days"></i> Jadwal &amp; Token[cite: 2]
+        <i class="fa-solid fa-calendar-days"></i> Jadwal &amp; Token
       </button>
       <button class="sidebar-menu-btn" onclick="switchTab('monitoring')">
-        <i class="fa-solid fa-desktop"></i> Pelaksanaan &amp; Monitoring[cite: 2]
+        <i class="fa-solid fa-desktop"></i> Pelaksanaan &amp; Monitoring
       </button>
     </aside>
 
@@ -622,7 +622,7 @@
         <div class="content-card">
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-list"></i> Daftar Event Ujian</div>
-            <button class="btn btn-danger" onclick="clearAllData('ujian')"><i class="fa-solid fa-broom"></i> Clear All Ujian[cite: 2]</button>
+            <button class="btn btn-danger" onclick="clearAllData('ujian')"><i class="fa-solid fa-broom"></i> Clear All Ujian</button>
           </div>
           <div class="table-container">
             <table>
@@ -645,14 +645,14 @@
       <section id="tab-siswa" class="tab-pane" style="display: none;">
         <div class="content-card">
           <div class="card-header-flex">
-            <div class="card-title"><i class="fa-solid fa-users"></i> Kelola Data Siswa[cite: 2]</div>
+            <div class="card-title"><i class="fa-solid fa-users"></i> Kelola Data Siswa</div>
             <div style="display: flex; gap: 10px;">
-              <button class="btn btn-excel" onclick="downloadTemplateSiswa()"><i class="fa-solid fa-file-excel"></i> Template Excel[cite: 2]</button>
+              <button class="btn btn-excel" onclick="downloadTemplateSiswa()"><i class="fa-solid fa-file-excel"></i> Template Excel</button>
               <label class="btn btn-primary" style="margin: 0; cursor: pointer;">
-                <i class="fa-solid fa-file-import"></i> Import Excel[cite: 2]
+                <i class="fa-solid fa-file-import"></i> Import Excel
                 <input type="file" id="importExcelSiswa" accept=".xlsx, .xls" style="display: none;" onchange="importSiswaExcel(event)">
               </label>
-              <button class="btn btn-danger" onclick="clearAllData('siswas')"><i class="fa-solid fa-broom"></i> Clear All Siswa[cite: 2]</button>
+              <button class="btn btn-danger" onclick="clearAllData('siswas')"><i class="fa-solid fa-broom"></i> Clear All Siswa</button>
             </div>
           </div>
 
@@ -664,13 +664,13 @@
               <div class="form-group">
                 <label>Tingkat / Kelas</label>
                 <select id="siswaKelas" required>
-                  <option value="Kelas 7">Kelas 7[cite: 2]</option>
-                  <option value="Kelas 8">Kelas 8[cite: 2]</option>
-                  <option value="Kelas 9">Kelas 9[cite: 2]</option>
+                  <option value="Kelas 7">Kelas 7</option>
+                  <option value="Kelas 8">Kelas 8</option>
+                  <option value="Kelas 9">Kelas 9</option>
                 </select>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary" id="btnSimpanSiswa"><i class="fa-solid fa-user-plus"></i> Tambah Siswa[cite: 2]</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpanSiswa"><i class="fa-solid fa-user-plus"></i> Tambah Siswa</button>
           </form>
 
           <div class="table-container">
@@ -695,14 +695,14 @@
       <section id="tab-guru" class="tab-pane" style="display: none;">
         <div class="content-card">
           <div class="card-header-flex">
-            <div class="card-title"><i class="fa-solid fa-chalkboard-user"></i> Kelola Data Guru[cite: 2]</div>
+            <div class="card-title"><i class="fa-solid fa-chalkboard-user"></i> Kelola Data Guru</div>
             <div style="display: flex; gap: 10px;">
-              <button class="btn btn-excel" onclick="downloadTemplateGuru()"><i class="fa-solid fa-file-excel"></i> Template Excel[cite: 2]</button>
+              <button class="btn btn-excel" onclick="downloadTemplateGuru()"><i class="fa-solid fa-file-excel"></i> Template Excel</button>
               <label class="btn btn-primary" style="margin: 0; cursor: pointer;">
-                <i class="fa-solid fa-file-import"></i> Import Excel[cite: 2]
+                <i class="fa-solid fa-file-import"></i> Import Excel
                 <input type="file" id="importExcelGuru" accept=".xlsx, .xls" style="display: none;" onchange="importGuruExcel(event)">
               </label>
-              <button class="btn btn-danger" onclick="clearAllData('gurus')"><i class="fa-solid fa-broom"></i> Clear All Guru[cite: 2]</button>
+              <button class="btn btn-danger" onclick="clearAllData('gurus')"><i class="fa-solid fa-broom"></i> Clear All Guru</button>
             </div>
           </div>
 
@@ -729,7 +729,7 @@
                 </div>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary" id="btnSimpanGuru"><i class="fa-solid fa-plus"></i> Tambah Guru[cite: 2]</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpanGuru"><i class="fa-solid fa-plus"></i> Tambah Guru</button>
           </form>
 
           <div class="table-container">
@@ -754,8 +754,8 @@
       <section id="tab-mapel" class="tab-pane" style="display: none;">
         <div class="content-card">
           <div class="card-header-flex">
-            <div class="card-title"><i class="fa-solid fa-book"></i> Master Mata Pelajaran[cite: 2]</div>
-            <button class="btn btn-danger" onclick="clearAllData('mapels')"><i class="fa-solid fa-broom"></i> Clear All Mapel[cite: 2]</button>
+            <div class="card-title"><i class="fa-solid fa-book"></i> Master Mata Pelajaran</div>
+            <button class="btn btn-danger" onclick="clearAllData('mapels')"><i class="fa-solid fa-broom"></i> Clear All Mapel</button>
           </div>
 
           <form id="formInputMapel" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
@@ -764,7 +764,7 @@
               <div class="form-group"><label>Kode Mapel</label><input type="text" id="mapelKode" placeholder="BINDO" required></div>
               <div class="form-group"><label>Nama Mata Pelajaran</label><input type="text" id="mapelNama" placeholder="Bahasa Indonesia" required></div>
             </div>
-            <button type="submit" class="btn btn-primary" id="btnSimpanMapel"><i class="fa-solid fa-plus"></i> Tambah Mapel[cite: 2]</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpanMapel"><i class="fa-solid fa-plus"></i> Tambah Mapel</button>
           </form>
 
           <div class="table-container">
@@ -787,8 +787,8 @@
       <section id="tab-jadwal" class="tab-pane" style="display: none;">
         <div class="content-card">
           <div class="card-header-flex">
-            <div class="card-title"><i class="fa-solid fa-calendar-days"></i> Penjadwalan &amp; Generator Token[cite: 2]</div>
-            <button class="btn btn-danger" onclick="clearAllData('jadwals')"><i class="fa-solid fa-broom"></i> Clear All Jadwal[cite: 2]</button>
+            <div class="card-title"><i class="fa-solid fa-calendar-days"></i> Penjadwalan &amp; Generator Token</div>
+            <button class="btn btn-danger" onclick="clearAllData('jadwals')"><i class="fa-solid fa-broom"></i> Clear All Jadwal</button>
           </div>
 
           <form id="formInputJadwal" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
@@ -805,10 +805,10 @@
               <div class="form-group">
                 <label>Target Tingkat</label>
                 <select id="jadwalTingkatSelect" required>
-                  <option value="Semua Kelas">Semua Kelas[cite: 2]</option>
-                  <option value="Kelas 7">Kelas 7[cite: 2]</option>
-                  <option value="Kelas 8">Kelas 8[cite: 2]</option>
-                  <option value="Kelas 9">Kelas 9[cite: 2]</option>
+                  <option value="Semua Kelas">Semua Kelas</option>
+                  <option value="Kelas 7">Kelas 7</option>
+                  <option value="Kelas 8">Kelas 8</option>
+                  <option value="Kelas 9">Kelas 9</option>
                   <option value="Olimpiade">Olimpiade</option>
                 </select>
               </div>
@@ -821,11 +821,11 @@
                 <label>Token Ujian (6 Karakter)</label>
                 <div style="display: flex; gap: 8px;">
                   <input type="text" id="jadwalToken" style="text-transform: uppercase; font-weight: 800;" maxlength="6" required>
-                  <button type="button" class="btn btn-warning" onclick="generateRandomToken()"><i class="fa-solid fa-rotate"></i> Acak[cite: 2]</button>
+                  <button type="button" class="btn btn-warning" onclick="generateRandomToken()"><i class="fa-solid fa-rotate"></i> Acak</button>
                 </div>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary" id="btnSimpanJadwal"><i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token[cite: 2]</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpanJadwal"><i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token</button>
           </form>
 
           <div class="table-container">
@@ -849,7 +849,7 @@
       <!-- MODUL 6: MONITORING & PELAKSANAAN UJIAN -->
       <section id="tab-monitoring" class="tab-pane" style="display: none;">
         <div class="content-card">
-          <div class="card-title" style="margin-bottom: 20px;"><i class="fa-solid fa-desktop"></i> Monitoring Sesi Ujian Real-Time[cite: 2]</div>
+          <div class="card-title" style="margin-bottom: 20px;"><i class="fa-solid fa-desktop"></i> Monitoring Sesi Ujian Real-Time</div>
 
           <div class="table-container">
             <table>
@@ -865,7 +865,7 @@
               </thead>
               <tbody id="tableMonitoringBody">
                 <tr>
-                  <td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada siswa yang sedang terhubung aktif.[cite: 2]</td>
+                  <td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada siswa yang sedang terhubung aktif.</td>
                 </tr>
               </tbody>
             </table>
@@ -880,7 +880,7 @@
   <div class="modal-overlay" id="loginModal">
     <div class="modal-card">
       <button class="close-modal" onclick="toggleModal('loginModal')"><i class="fa-solid fa-xmark"></i></button>
-      <h3 style="font-size: 1.3rem; color: #0d3b36; margin-bottom: 20px; font-weight: 800; text-align: center;">Login Admin[cite: 2]</h3>
+      <h3 style="font-size: 1.3rem; color: #0d3b36; margin-bottom: 20px; font-weight: 800; text-align: center;">Login Admin</h3>
       <form id="adminLoginForm">
         <div class="form-group" style="margin-bottom: 15px;">
           <label>Username Admin</label>
@@ -891,7 +891,7 @@
           <input type="password" id="password" placeholder="Password..." required>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;" id="btnSubmitLogin">
-          <span>Masuk Ke Dashboard[cite: 2]</span>
+          <span>Masuk Ke Dashboard</span>
         </button>
       </form>
     </div>
@@ -901,7 +901,7 @@
   <div class="modal-overlay" id="profilModal">
     <div class="modal-card">
       <button class="close-modal" onclick="toggleModal('profilModal')"><i class="fa-solid fa-xmark"></i></button>
-      <h3 style="font-size: 1.2rem; color: #0d3b36; margin-bottom: 20px; font-weight: 800;">Pengaturan Profil Admin[cite: 2]</h3>
+      <h3 style="font-size: 1.2rem; color: #0d3b36; margin-bottom: 20px; font-weight: 800;">Pengaturan Profil Admin</h3>
       <form id="formGantiProfil">
         <div class="form-group" style="margin-bottom: 15px;">
           <label>Username Admin</label>
@@ -915,7 +915,7 @@
           <label>Password Baru</label>
           <input type="password" id="profNewPass" placeholder="Masukkan password baru..." required>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Simpan Perubahan[cite: 2]</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Simpan Perubahan</button>
       </form>
     </div>
   </div>
@@ -1014,13 +1014,13 @@
           toggleModal('loginModal');
           checkSession();
         } else {
-          alert('Username atau password salah![cite: 2]');
+          alert('Username atau password salah!');
         }
       } catch (err) {
-        alert('Koneksi terganggu.[cite: 2]');
+        alert('Koneksi terganggu.');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>Masuk Ke Dashboard[cite: 2]</span>`;
+        btn.innerHTML = `<span>Masuk Ke Dashboard</span>`;
       }
     });
 
@@ -1041,13 +1041,13 @@
         const snap = await getDoc(ref);
         if (snap.exists() && snap.data().password === oldPass) {
           await updateDoc(ref, { password: newPass });
-          alert("Profil & Password berhasil diubah![cite: 2]");
+          alert("Profil & Password berhasil diubah!");
           toggleModal('profilModal');
           document.getElementById('formGantiProfil').reset();
         } else {
-          alert("Password lama tidak cocok.[cite: 2]");
+          alert("Password lama tidak cocok.");
         }
-      } catch (err) { alert("Gagal menyimpan profil.[cite: 2]"); }
+      } catch (err) { alert("Gagal menyimpan profil."); }
     });
 
     // --- 1. MODUL BERANDA (EVENT UJIAN) ---
@@ -1062,7 +1062,7 @@
       await setDoc(doc(db, "ujian", id), { id, nama, tglMulai, tglSelesai });
       document.getElementById('formBuatUjian').reset();
       document.getElementById('editUjianId').value = '';
-      document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Event Ujian[cite: 2]`;
+      document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Event Ujian`;
       loadDataBeranda();
     });
 
@@ -1074,7 +1074,7 @@
         document.getElementById('namaUjianInput').value = d.nama;
         document.getElementById('tglMulaiInput').value = d.tglMulai;
         document.getElementById('tglSelesaiInput').value = d.tglSelesai;
-        document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-pen"></i> Update Event Ujian[cite: 2]`;
+        document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-pen"></i> Update Event Ujian`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
@@ -1089,12 +1089,12 @@
 
       snap.forEach(d => {
         const item = d.data();
-        let statusBadge = `<span class="badge badge-warning">Belum Dimulai[cite: 2]</span>`;
+        let statusBadge = `<span class="badge badge-warning">Belum Dimulai</span>`;
         if (today >= item.tglMulai && today <= item.tglSelesai) {
-          statusBadge = `<span class="badge badge-success">Berlangsung (Aktif)[cite: 2]</span>`;
+          statusBadge = `<span class="badge badge-success">Berlangsung (Aktif)</span>`;
           countAktif++;
         } else if (today > item.tglSelesai) {
-          statusBadge = `<span class="badge badge-secondary">Selesai[cite: 2]</span>`;
+          statusBadge = `<span class="badge badge-secondary">Selesai</span>`;
           countSelesai++;
         }
 
@@ -1132,7 +1132,7 @@
       await setDoc(doc(db, "siswas", u), { username: u, password: p, nama, kelas });
       document.getElementById('formInputSiswa').reset();
       document.getElementById('siswaUser').disabled = false;
-      document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-user-plus"></i> Tambah Siswa[cite: 2]`;
+      document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-user-plus"></i> Tambah Siswa`;
       loadDataSiswa();
     });
 
@@ -1145,7 +1145,7 @@
         document.getElementById('siswaPass').value = d.password;
         document.getElementById('siswaNama').value = d.nama;
         document.getElementById('siswaKelas').value = d.kelas;
-        document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-pen"></i> Update Siswa[cite: 2]`;
+        document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-pen"></i> Update Siswa`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
@@ -1199,7 +1199,7 @@
             });
           }
         }
-        alert("Import Data Siswa Berhasil![cite: 2]");
+        alert("Import Data Siswa Berhasil!");
         loadDataSiswa();
       };
       reader.readAsBinaryString(file);
@@ -1212,7 +1212,7 @@
       const snap = await getDocs(collection(db, "mapels"));
 
       if (snap.empty) {
-        container.innerHTML = '<small style="color: #94a3b8;">Belum ada master mapel. Tambahkan di menu Mata Pelajaran lebih dulu.[cite: 2]</small>';
+        container.innerHTML = '<small style="color: #94a3b8;">Belum ada master mapel. Tambahkan di menu Mata Pelajaran lebih dulu.</small>';
         return;
       }
 
@@ -1222,7 +1222,7 @@
         container.innerHTML += `
           <label class="checkbox-item">
             <input type="checkbox" name="guruMapelCheck" value="${m.nama}" ${isChecked}>
-            <span>${m.nama} (${m.kode})[cite: 2]</span>
+            <span>${m.nama} (${m.kode})</span>
           </label>
         `;
       });
@@ -1247,7 +1247,7 @@
       const tingkatList = Array.from(checkedTingkat).map(cb => cb.value);
 
       if (mapelList.length === 0) {
-        alert("Pilih setidaknya satu mata pelajaran yang diampu oleh guru![cite: 2]");
+        alert("Pilih setidaknya satu mata pelajaran yang diampu oleh guru!");
         return;
       }
       if (tingkatList.length === 0) {
@@ -1265,7 +1265,7 @@
 
       document.getElementById('formInputGuru').reset();
       document.getElementById('guruUser').disabled = false;
-      document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Guru[cite: 2]`;
+      document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Guru`;
       setCheckedCheckboxes('guruTingkatCheck', []);
       loadDataGuru();
     });
@@ -1284,7 +1284,7 @@
         document.getElementById('guruUser').disabled = true;
         document.getElementById('guruPass').value = d.password;
         document.getElementById('guruNama').value = d.nama;
-        document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-pen"></i> Update Guru[cite: 2]`;
+        document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-pen"></i> Update Guru`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
@@ -1340,7 +1340,7 @@
             });
           }
         }
-        alert("Import Data Guru Berhasil![cite: 2]");
+        alert("Import Data Guru Berhasil!");
         loadDataGuru();
       };
       reader.readAsBinaryString(file);
@@ -1361,7 +1361,7 @@
       document.getElementById('formInputMapel').reset();
       document.getElementById('editMapelOldKode').value = '';
       document.getElementById('mapelKode').disabled = false;
-      document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Mapel[cite: 2]`;
+      document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Mapel`;
       loadDataMapel();
     });
 
@@ -1373,7 +1373,7 @@
         document.getElementById('mapelKode').value = d.kode;
         document.getElementById('mapelKode').disabled = true;
         document.getElementById('mapelNama').value = d.nama;
-        document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-pen"></i> Update Mapel[cite: 2]`;
+        document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-pen"></i> Update Mapel`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
@@ -1442,7 +1442,7 @@
       await setDoc(doc(db, "jadwals", id), data);
       document.getElementById('formInputJadwal').reset();
       document.getElementById('editJadwalId').value = '';
-      document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token[cite: 2]`;
+      document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token`;
       loadDataJadwal();
     });
 
@@ -1459,7 +1459,7 @@
         document.getElementById('jadwalJamMulai').value = d.jamMulai;
         document.getElementById('jadwalJamSelesai').value = d.jamSelesai;
         document.getElementById('jadwalToken').value = d.token;
-        document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-pen"></i> Update Jadwal[cite: 2]`;
+        document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-pen"></i> Update Jadwal`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     };
@@ -1492,7 +1492,7 @@
 
     // --- UTILITY DELETE & CLEAR ALL ---
     window.deleteItem = async function(coll, id) {
-      if (confirm("Apakah Anda yakin ingin menghapus data ini?[cite: 2]")) {
+      if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
         await deleteDoc(doc(db, coll, id));
         if (coll === 'ujian') loadDataBeranda();
         if (coll === 'siswas') loadDataSiswa();
@@ -1503,12 +1503,12 @@
     };
 
     window.clearAllData = async function(coll) {
-      if (confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus SELURUH DATA pada koleksi '${coll}'?[cite: 2]`)) {
+      if (confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus SELURUH DATA pada koleksi '${coll}'?`)) {
         const snap = await getDocs(collection(db, coll));
         for (let d of snap.docs) {
           await deleteDoc(doc(db, coll, d.id));
         }
-        alert("Seluruh data berhasil dibersihkan![cite: 2]");
+        alert("Seluruh data berhasil dibersihkan!");
         if (coll === 'ujian') loadDataBeranda();
         if (coll === 'siswas') loadDataSiswa();
         if (coll === 'gurus') loadDataGuru();
