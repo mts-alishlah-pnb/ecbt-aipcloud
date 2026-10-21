@@ -1,1 +1,1020 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Guru - E-CBT MTs Al Ishlah Panambangan</title>
+  
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER / NAVBAR */
+    header {
+      background-color: #0d3b36;
+      color: #ffffff;
+      padding: 12px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .brand img {
+      height: 42px;
+      width: auto;
+    }
+
+    .brand-text h1 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      line-height: 1.2;
+    }
+
+    .brand-text p {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    /* GUEST NAV */
+    #navGuest {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    #navGuest a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+
+    #navGuest a:hover {
+      opacity: 1;
+      color: #34d399;
+    }
+
+    /* DROPDOWN PROFIL GURU */
+    .user-profile-menu {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .user-info-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 30px;
+      transition: background 0.2s;
+    }
+
+    .user-info-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: #34d399;
+      color: #0d3b36;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 110%;
+      right: 0;
+      background: #ffffff;
+      color: #1e293b;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+      width: 220px;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 200;
+    }
+
+    .dropdown-menu.show {
+      display: flex;
+    }
+
+    .dropdown-item {
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.2s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+      background: #f1f5f9;
+      color: #0d3b36;
+    }
+
+    .dropdown-item.text-danger:hover {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    /* LANDING PAGE (BEFORE LOGIN) */
+    #landingSection {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 20px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      align-items: center;
+      gap: 40px;
+      flex: 1;
+    }
+
+    .hero-text h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #0d3b36;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .hero-text p {
+      font-size: 1rem;
+      color: #64748b;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .btn-login-guru {
+      width: 100%;
+      max-width: 320px;
+      padding: 18px 24px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #0f172a;
+      background-color: #fef3c7;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+
+    .btn-login-guru:hover {
+      transform: translateY(-3px);
+      background-color: #fde047;
+    }
+
+    /* MAIN DASHBOARD LAYOUT */
+    #dashboardWrapper {
+      display: none;
+      flex: 1;
+      min-height: calc(100vh - 66px);
+    }
+
+    .sidebar {
+      width: 280px;
+      background-color: #0d3b36;
+      color: #ffffff;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 10px;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sidebar-menu-btn:hover, .sidebar-menu-btn.active {
+      background-color: #154d44;
+      color: #34d399;
+    }
+
+    .sub-menu-container {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      padding-left: 20px;
+      margin-top: 4px;
+    }
+
+    .sub-menu-container.show {
+      display: flex;
+    }
+
+    .sub-menu-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sub-menu-btn:hover, .sub-menu-btn.active {
+      background-color: rgba(52, 211, 153, 0.1);
+      color: #34d399;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 30px;
+      background-color: #f8fafc;
+      overflow-y: auto;
+    }
+
+    /* CARDS STATISTIK */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    .stat-icon.mapel { background: #e0f2fe; color: #0284c7; }
+    .stat-icon.soal { background: #dcfce7; color: #16a34a; }
+    .stat-icon.jadwal { background: #f3e8ff; color: #9333ea; }
+
+    .stat-info h4 { font-size: 0.8rem; color: #64748b; font-weight: 600; }
+    .stat-info p { font-size: 1.5rem; color: #0f172a; font-weight: 800; }
+
+    /* CONTENT SECTIONS */
+    .content-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+    }
+
+    .card-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0d3b36;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* FORM STYLES */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: #0d3b36;
+    }
+
+    /* BUTTONS & BADGES */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: #0d3b36; color: #ffffff; }
+    .btn-primary:hover { background: #154d44; }
+    .btn-danger { background: #ef4444; color: #ffffff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-warning { background: #f59e0b; color: #ffffff; }
+    .btn-warning:hover { background: #d97706; }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-secondary { background: #f1f5f9; color: #475569; }
+
+    /* TABLES */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 700;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* MODAL POPUP */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-card {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px; right: 15px;
+      background: none; border: none;
+      font-size: 1.2rem; color: #64748b;
+      cursor: pointer;
+    }
+
+    footer {
+      background: linear-gradient(180deg, #ffffff 0%, #d1fae5 100%);
+      padding: 15px;
+      text-align: center;
+      margin-top: auto;
+    }
+
+    footer img { height: 28px; }
+    footer p { font-size: 0.75rem; font-weight: 700; color: #334155; }
+
+    @media (max-width: 768px) {
+      #dashboardWrapper { flex-direction: column; }
+      .sidebar { width: 100%; }
+      #landingSection { grid-template-columns: 1fr; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER / NAVBAR -->
+  <header>
+    <div class="brand">
+      <img src="../Assets/mts.png" alt="Logo MTs Al Ishlah">
+      <div class="brand-text">
+        <h1>e - C B T</h1>
+        <p>PORTAL GURU - UJIAN COMPUTER BASED TEST</p>
+      </div>
+    </div>
+
+    <!-- GUEST NAV -->
+    <nav id="navGuest">
+      <a href="../index.html"><i class="fa-solid fa-house"></i> Beranda</a>
+      <button class="btn btn-primary" id="openLoginModalNav"><i class="fa-solid fa-right-to-bracket"></i> Login Guru</button>
+    </nav>
+
+    <!-- GURU NAV -->
+    <div id="navGuru" class="user-profile-menu" style="display: none;">
+      <div class="user-info-btn" id="userMenuBtn">
+        <div class="user-avatar"><i class="fa-solid fa-chalkboard-user"></i></div>
+        <span style="font-size: 0.85rem; font-weight: 700;" id="headerGuruName">Guru Pengajar</span>
+        <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+      </div>
+
+      <div class="dropdown-menu" id="userDropdown">
+        <button class="dropdown-item" id="btnOpenProfilModal"><i class="fa-solid fa-user-gear"></i> Profil &amp; Password</button>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0;">
+        <button class="dropdown-item text-danger" id="btnLogout"><i class="fa-solid fa-right-from-bracket"></i> Keluar / Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LANDING PAGE -->
+  <main id="landingSection">
+    <div class="hero-text">
+      <h2>Selamat Datang</h2>
+      <h2>Bapak/Ibu Guru di</h2>
+      <h2>E-CBT AIP Cloud</h2>
+      <p>Portal Pengelolaan Bank Soal Google Form &amp; Jadwal Ujian Mandiri</p>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;">
+      <button class="btn-login-guru" id="openModalBtn">
+        <i class="fa-solid fa-lock"></i> KLIK UNTUK LOGIN GURU
+      </button>
+    </div>
+  </main>
+
+  <!-- DASHBOARD UTAMA GURU -->
+  <div id="dashboardWrapper">
+    <!-- SIDEBAR DINAMIS -->
+    <aside class="sidebar">
+      <button class="sidebar-menu-btn active" id="btnSidebarBeranda" onclick="showTabBeranda()">
+        <span><i class="fa-solid fa-house"></i> Beranda Guru</span>
+      </button>
+      
+      <div style="font-size: 0.7rem; font-weight: 800; color: #64748b; margin-top: 15px; padding-left: 10px; text-transform: uppercase;">
+        Mapel Diampu
+      </div>
+      
+      <!-- MENU MAPEL DAN TINGKAT KELAS DILUAT SECARA DINAMIS -->
+      <div id="dynamicSidebarMapelList"></div>
+    </aside>
+
+    <main class="main-content">
+
+      <!-- MODUL 1: BERANDA GURU -->
+      <section id="tab-beranda" class="tab-pane">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon mapel"><i class="fa-solid fa-book-open"></i></div>
+            <div class="stat-info">
+              <h4>Mapel Diampu</h4>
+              <p id="statTotalMapelGuru">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon soal"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="stat-info">
+              <h4>Bank Soal Aktif</h4>
+              <p id="statTotalBankSoal">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon jadwal"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="stat-info">
+              <h4>Jadwal Ujian Saya</h4>
+              <p id="statTotalJadwalGuru">0</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="card-title" style="margin-bottom: 15px;"><i class="fa-solid fa-chalkboard-user"></i> Selamat Datang</div>
+          <p style="font-size: 0.9rem; color: #475569; line-height: 1.6;">
+            Silakan pilih <strong>Mata Pelajaran</strong> dan <strong>Tingkat Kelas</strong> pada sidebar di sebelah kiri untuk mengelola Bank Soal / Link Google Form serta melihat Jadwal Ujian khusus untuk kelas yang Anda ampu.
+          </p>
+        </div>
+      </section>
+
+      <!-- MODUL 2: DASHBOARD SPESIFIK MAPEL & TINGKAT -->
+      <section id="tab-mapel-tingkat" class="tab-pane" style="display: none;">
+        <!-- BANNER INFO AKTIF -->
+        <div class="content-card" style="background: linear-gradient(135deg, #0d3b36 0%, #154d44 100%); color: #ffffff;">
+          <h2 id="activeMapelTitle" style="font-size: 1.4rem; font-weight: 800;">Bahasa Indonesia</h2>
+          <p id="activeTingkatSubtitle" style="font-size: 0.9rem; color: #34d399; font-weight: 600; margin-top: 4px;">Tingkat: Kelas 8</p>
+        </div>
+
+        <!-- FORM BANK SOAL GOOGLE FORM -->
+        <div class="content-card">
+          <div class="card-title" style="margin-bottom: 15px;"><i class="fa-solid fa-file-circle-plus"></i> Kelola Bank Soal / Link Google Form</div>
+          <form id="formBankSoal">
+            <input type="hidden" id="editSoalId">
+            <div class="form-row">
+              <div class="form-group" style="flex: 2;">
+                <label>Judul Soal / Ujian</label>
+                <input type="text" id="soalJudul" placeholder="Contoh: PTS Bahasa Indonesia Semester Ganjil" required>
+              </div>
+              <div class="form-group" style="flex: 2;">
+                <label>Link Google Form Soal</label>
+                <input type="url" id="soalLinkGForm" placeholder="https://forms.gle/..." required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="flex: 2;">
+                <label>Link Spreadsheet Respons / Nilai (Opsional)</label>
+                <input type="url" id="soalLinkSheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btnSimpanBankSoal"><i class="fa-solid fa-floppy-disk"></i> Simpan Link Soal</button>
+          </form>
+
+          <!-- TABEL BANK SOAL TERSIMPAN -->
+          <div class="table-container" style="margin-top: 25px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Judul Soal</th>
+                  <th>Link Google Form</th>
+                  <th>Link Rekap Sheet</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableBankSoalBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TABEL JADWAL UJIAN MAPEL & TINGKAT INI -->
+        <div class="content-card">
+          <div class="card-title" style="margin-bottom: 15px;"><i class="fa-solid fa-calendar-days"></i> Jadwal Ujian Khusus Mapel &amp; Tingkat Ini</div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Nama Event Ujian</th>
+                  <th>Tanggal Pelaksanaan</th>
+                  <th>Jam Pelaksanaan</th>
+                  <th>Kode Token</th>
+                </tr>
+              </thead>
+              <tbody id="tableJadwalGuruBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL LOGIN GURU -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-card">
+      <button class="close-modal" onclick="toggleModal('loginModal')"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-size: 1.3rem; color: #0d3b36; margin-bottom: 20px; font-weight: 800; text-align: center;">Login Guru</h3>
+      <form id="guruLoginForm">
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>Username Guru</label>
+          <input type="text" id="username" placeholder="Username..." required>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Password..." required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;" id="btnSubmitLogin">
+          <span>Masuk Ke Portal Guru</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PROFIL & PASSWORD GURU -->
+  <div class="modal-overlay" id="profilModal">
+    <div class="modal-card">
+      <button class="close-modal" onclick="toggleModal('profilModal')"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="font-size: 1.2rem; color: #0d3b36; margin-bottom: 20px; font-weight: 800;">Pengaturan Profil Guru</h3>
+      <form id="formGantiProfil">
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>Username</label>
+          <input type="text" id="profUsername" disabled>
+        </div>
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>Password Lama</label>
+          <input type="password" id="profOldPass" placeholder="Masukkan password lama..." required>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label>Password Baru</label>
+          <input type="password" id="profNewPass" placeholder="Masukkan password baru..." required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Simpan Perubahan</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <img src="../Assets/aip 1.png" alt="Logo AIP Cloud">
+    <p>&copy; 2026 AIP CLOUD - MTs Al Ishlah Panambangan</p>
+  </footer>
+
+  <!-- INTEGRASI LOGIKA & FIREBASE -->
+  <script type="module">
+    import { db } from '../Assets/firebase.js';
+    import { doc, getDoc, setDoc, updateDoc, collection, getDocs, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // GLOBAL STATE ACTIVE
+    window.currentActiveMapel = '';
+    window.currentActiveTingkat = '';
+
+    window.toggleModal = function(id) {
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+    };
+
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    userMenuBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userDropdown.classList.toggle('show');
+    });
+    window.addEventListener('click', () => userDropdown?.classList.remove('show'));
+
+    // CHECK SESSION LOGGED IN GURU
+    function checkSession() {
+      const session = JSON.parse(localStorage.getItem('guruSession'));
+      if (session && session.isLoggedIn) {
+        document.getElementById('landingSection').style.display = 'none';
+        document.getElementById('dashboardWrapper').style.display = 'flex';
+        document.getElementById('navGuest').style.display = 'none';
+        document.getElementById('navGuru').style.display = 'block';
+        document.getElementById('headerGuruName').innerText = session.nama || 'Guru';
+        document.getElementById('profUsername').value = session.username;
+        loadGuruSidebarAndData(session.username);
+      } else {
+        document.getElementById('landingSection').style.display = 'grid';
+        document.getElementById('dashboardWrapper').style.display = 'none';
+        document.getElementById('navGuest').style.display = 'flex';
+        document.getElementById('navGuru').style.display = 'none';
+      }
+    }
+    checkSession();
+
+    document.getElementById('openModalBtn')?.addEventListener('click', () => toggleModal('loginModal'));
+    document.getElementById('openLoginModalNav')?.addEventListener('click', () => toggleModal('loginModal'));
+
+    // LOGIN EVENT GURU
+    document.getElementById('guruLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+      const btn = document.getElementById('btnSubmitLogin');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...`;
+
+      try {
+        const guruSnap = await getDoc(doc(db, "gurus", u));
+        if (guruSnap.exists() && guruSnap.data().password === p) {
+          localStorage.setItem('guruSession', JSON.stringify({
+            username: u,
+            nama: guruSnap.data().nama,
+            mapel: guruSnap.data().mapel,
+            isLoggedIn: true
+          }));
+          toggleModal('loginModal');
+          checkSession();
+        } else {
+          alert('Username atau password guru salah!');
+        }
+      } catch (err) {
+        alert('Koneksi terganggu.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Masuk Ke Portal Guru</span>`;
+      }
+    });
+
+    // LOGOUT EVENT
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      localStorage.removeItem('guruSession');
+      checkSession();
+    });
+
+    // EDIT PROFIL & PASSWORD GURU
+    document.getElementById('btnOpenProfilModal').addEventListener('click', () => toggleModal('profilModal'));
+    document.getElementById('formGantiProfil').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const session = JSON.parse(localStorage.getItem('guruSession'));
+      const oldPass = document.getElementById('profOldPass').value;
+      const newPass = document.getElementById('profNewPass').value;
+
+      try {
+        const ref = doc(db, "gurus", session.username);
+        const snap = await getDoc(ref);
+        if (snap.exists() && snap.data().password === oldPass) {
+          await updateDoc(ref, { password: newPass });
+          alert("Password berhasil diubah!");
+          toggleModal('profilModal');
+          document.getElementById('formGantiProfil').reset();
+        } else {
+          alert("Password lama tidak cocok.");
+        }
+      } catch (err) { alert("Gagal menyimpan profil."); }
+    });
+
+    // SIDEBAR DYNAMIC GENERATOR
+    async function loadGuruSidebarAndData(username) {
+      const guruSnap = await getDoc(doc(db, "gurus", username));
+      if (!guruSnap.exists()) return;
+
+      const guruData = guruSnap.data();
+      const mapelList = guruData.mapel ? guruData.mapel.split(',').map(s => s.trim()) : [];
+      document.getElementById('statTotalMapelGuru').innerText = mapelList.length;
+
+      // Ambil daftar Tingkat/Kelas dari master data Jadwal/Admin
+      const tingkatList = ["Kelas 7", "Kelas 8", "Kelas 9", "Olimpiade"];
+
+      const container = document.getElementById('dynamicSidebarMapelList');
+      container.innerHTML = '';
+
+      mapelList.forEach((mapel, index) => {
+        const mapelId = `mapel_menu_${index}`;
+        let subMenuHtml = '';
+
+        tingkatList.forEach(tingkat => {
+          subMenuHtml += `
+            <button class="sub-menu-btn" onclick="openMapelTingkatPane('${mapel}', '${tingkat}')">
+              <i class="fa-solid fa-angle-right"></i> ${tingkat}
+            </button>
+          `;
+        });
+
+        container.innerHTML += `
+          <div style="margin-top: 5px;">
+            <button class="sidebar-menu-btn" onclick="toggleSubMenu('${mapelId}')">
+              <span><i class="fa-solid fa-book"></i> ${mapel}</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+            </button>
+            <div class="sub-menu-container" id="${mapelId}">
+              ${subMenuHtml}
+            </div>
+          </div>
+        `;
+      });
+
+      loadStatsCount(username);
+    }
+
+    window.toggleSubMenu = function(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('show');
+    };
+
+    window.showTabBeranda = function() {
+      document.getElementById('tab-beranda').style.display = 'block';
+      document.getElementById('tab-mapel-tingkat').style.display = 'none';
+      document.getElementById('btnSidebarBeranda').classList.add('active');
+    };
+
+    window.openMapelTingkatPane = function(mapel, tingkat) {
+      window.currentActiveMapel = mapel;
+      window.currentActiveTingkat = tingkat;
+
+      document.getElementById('btnSidebarBeranda').classList.remove('active');
+      document.getElementById('tab-beranda').style.display = 'none';
+      document.getElementById('tab-mapel-tingkat').style.display = 'block';
+
+      document.getElementById('activeMapelTitle').innerText = mapel;
+      document.getElementById('activeTingkatSubtitle').innerText = `Tingkat: ${tingkat}`;
+
+      loadBankSoalData();
+      loadJadwalGuruData();
+    };
+
+    // BANK SOAL CRUD
+    document.getElementById('formBankSoal').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const session = JSON.parse(localStorage.getItem('guruSession'));
+      const editId = document.getElementById('editSoalId').value;
+      const id = editId ? editId : 'soal_' + Date.now();
+
+      const data = {
+        id,
+        guruUser: session.username,
+        mapel: window.currentActiveMapel,
+        tingkat: window.currentActiveTingkat,
+        judul: document.getElementById('soalJudul').value.trim(),
+        linkGForm: document.getElementById('soalLinkGForm').value.trim(),
+        linkSheet: document.getElementById('soalLinkSheet').value.trim()
+      };
+
+      await setDoc(doc(db, "bank_soal", id), data);
+      document.getElementById('formBankSoal').reset();
+      document.getElementById('editSoalId').value = '';
+      document.getElementById('btnSimpanBankSoal').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Link Soal`;
+      loadBankSoalData();
+      loadStatsCount(session.username);
+    });
+
+    async function loadBankSoalData() {
+      const session = JSON.parse(localStorage.getItem('guruSession'));
+      const tbody = document.getElementById('tableBankSoalBody');
+      tbody.innerHTML = '';
+
+      const snap = await getDocs(collection(db, "bank_soal"));
+      let no = 1;
+
+      snap.forEach(d => {
+        const item = d.data();
+        if (item.guruUser === session.username && item.mapel === window.currentActiveMapel && item.tingkat === window.currentActiveTingkat) {
+          tbody.innerHTML += `
+            <tr>
+              <td>${no++}</td>
+              <td><strong>${item.judul}</strong></td>
+              <td><a href="${item.linkGForm}" target="_blank" style="color:#0d3b36; font-weight:700;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka GForm</a></td>
+              <td>${item.linkSheet ? `<a href="${item.linkSheet}" target="_blank" style="color:#16a34a; font-weight:700;"><i class="fa-solid fa-file-excel"></i> Rekap Sheet</a>` : '-'}</td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn btn-warning" onclick="editBankSoal('${item.id}')"><i class="fa-solid fa-pen"></i></button>
+                  <button class="btn btn-danger" onclick="deleteBankSoal('${item.id}')"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+      });
+
+      if (no === 1) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Belum ada bank soal untuk ${window.currentActiveMapel} (${window.currentActiveTingkat}).</td></tr>`;
+      }
+    }
+
+    window.editBankSoal = async function(id) {
+      const snap = await getDoc(doc(db, "bank_soal", id));
+      if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('editSoalId').value = d.id;
+        document.getElementById('soalJudul').value = d.judul;
+        document.getElementById('soalLinkGForm').value = d.linkGForm;
+        document.getElementById('soalLinkSheet').value = d.linkSheet || '';
+        document.getElementById('btnSimpanBankSoal').innerHTML = `<i class="fa-solid fa-pen"></i> Update Link Soal`;
+      }
+    };
+
+    window.deleteBankSoal = async function(id) {
+      if (confirm("Hapus link bank soal ini?")) {
+        await deleteDoc(doc(db, "bank_soal", id));
+        loadBankSoalData();
+      }
+    };
+
+    // JADWAL KHUSUS MAPEL & TINGKAT
+    async function loadJadwalGuruData() {
+      const tbody = document.getElementById('tableJadwalGuruBody');
+      tbody.innerHTML = '';
+
+      const snap = await getDocs(collection(db, "jadwals"));
+      let no = 1;
+
+      snap.forEach(d => {
+        const item = d.data();
+        if (item.mapel === window.currentActiveMapel && (item.tingkat === window.currentActiveTingkat || item.tingkat === "Semua Kelas")) {
+          tbody.innerHTML += `
+            <tr>
+              <td>${no++}</td>
+              <td><strong>${item.ujian}</strong></td>
+              <td>${item.tgl}</td>
+              <td>${item.jamMulai} - ${item.jamSelesai}</td>
+              <td><span class="badge badge-success" style="font-size:0.85rem;">${item.token}</span></td>
+            </tr>
+          `;
+        }
+      });
+
+      if (no === 1) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Belum ada jadwal ujian dari Admin untuk ${window.currentActiveMapel} (${window.currentActiveTingkat}).</td></tr>`;
+      }
+    }
+
+    // STATS COUNTER
+    async function loadStatsCount(username) {
+      const soalSnap = await getDocs(collection(db, "bank_soal"));
+      let countSoal = 0;
+      soalSnap.forEach(d => { if (d.data().guruUser === username) countSoal++; });
+      document.getElementById('statTotalBankSoal').innerText = countSoal;
+
+      const guruSnap = await getDoc(doc(db, "gurus", username));
+      let countJadwal = 0;
+      if (guruSnap.exists()) {
+        const mapels = guruSnap.data().mapel ? guruSnap.data().mapel.split(',').map(s => s.trim()) : [];
+        const jdwlSnap = await getDocs(collection(db, "jadwals"));
+        jdwlSnap.forEach(d => { if (mapels.includes(d.data().mapel)) countJadwal++; });
+      }
+      document.getElementById('statTotalJadwalGuru').innerText = countJadwal;
+    }
+  </script>
+
+</body>
+</html>
