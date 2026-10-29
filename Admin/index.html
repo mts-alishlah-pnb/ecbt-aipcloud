@@ -315,6 +315,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
     .card-title {
@@ -666,12 +668,13 @@
         <div class="content-card">
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-users"></i> Kelola Data Siswa</div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
               <button class="btn btn-excel" onclick="downloadTemplateSiswa()"><i class="fa-solid fa-file-excel"></i> Template Excel</button>
               <label class="btn btn-primary" style="margin: 0; cursor: pointer;">
                 <i class="fa-solid fa-file-import"></i> Import Excel
                 <input type="file" id="importExcelSiswa" accept=".xlsx, .xls" style="display: none;" onchange="importSiswaExcel(event)">
               </label>
+              <button class="btn btn-excel" style="background-color: #047857;" onclick="exportDataSiswa()"><i class="fa-solid fa-file-arrow-down"></i> Export Excel</button>
               <button class="btn btn-danger" onclick="clearAllData('siswas')"><i class="fa-solid fa-broom"></i> Clear All Siswa</button>
             </div>
           </div>
@@ -716,12 +719,13 @@
         <div class="content-card">
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-chalkboard-user"></i> Kelola Data Guru</div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
               <button class="btn btn-excel" onclick="downloadTemplateGuru()"><i class="fa-solid fa-file-excel"></i> Template Excel</button>
               <label class="btn btn-primary" style="margin: 0; cursor: pointer;">
                 <i class="fa-solid fa-file-import"></i> Import Excel
                 <input type="file" id="importExcelGuru" accept=".xlsx, .xls" style="display: none;" onchange="importGuruExcel(event)">
               </label>
+              <button class="btn btn-excel" style="background-color: #047857;" onclick="exportDataGuru()"><i class="fa-solid fa-file-arrow-down"></i> Export Excel</button>
               <button class="btn btn-danger" onclick="clearAllData('gurus')"><i class="fa-solid fa-broom"></i> Clear All Guru</button>
             </div>
           </div>
@@ -1220,6 +1224,29 @@
       reader.readAsBinaryString(file);
     };
 
+    // FITUR EXPORT DATA SISWA KE EXCEL
+    window.exportDataSiswa = async function() {
+      const snap = await getDocs(collection(db, "siswas"));
+      if (snap.empty) {
+        alert("Tidak ada data siswa untuk diexport.");
+        return;
+      }
+      const exportData = [];
+      snap.forEach(d => {
+        const item = d.data();
+        exportData.push({
+          Nama: item.nama || "",
+          Tingkat: item.kelas || "",
+          Username: item.username || "",
+          Password: item.password || ""
+        });
+      });
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Data_Siswa");
+      XLSX.writeFile(wb, "Data_Siswa_MTs_Al_Ishlah.xlsx");
+    };
+
     // --- 3. MODUL DATA GURU ---
     async function renderGuruAssignmentForm(savedAssignments = {}) {
       const container = document.getElementById('guruMapelAssignmentContainer');
@@ -1373,6 +1400,38 @@
       alert("Fitur import Excel untuk struktur multi-mapel tingkat spesifik dapat disesuaikan melalui form interaktif admin.");
     };
 
+    // FITUR EXPORT DATA GURU KE EXCEL (BERBENTUK TABEL PER KOLOM)
+    window.exportDataGuru = async function() {
+      const snap = await getDocs(collection(db, "gurus"));
+      if (snap.empty) {
+        alert("Tidak ada data guru untuk diexport.");
+        return;
+      }
+      const exportData = [];
+      snap.forEach(d => {
+        const item = d.data();
+        let mapelTingkatStr = "";
+        if (item.assignments) {
+          mapelTingkatStr = Object.entries(item.assignments)
+            .map(([mapel, tings]) => `${mapel} (${tings.join(', ')})`)
+            .join('; ');
+        } else if (item.mapel) {
+          mapelTingkatStr = `${item.mapel} (${item.tingkat || '-'})`;
+        }
+
+        exportData.push({
+          Nama: item.nama || "",
+          Username: item.username || "",
+          Password: item.password || "",
+          "Mapel & Tingkat Diampu": mapelTingkatStr
+        });
+      });
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Data_Guru");
+      XLSX.writeFile(wb, "Data_Guru_MTs_Al_Ishlah.xlsx");
+    };
+
     // --- 4. MODUL MAPEL ---
     document.getElementById('formInputMapel').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1465,7 +1524,7 @@
         jamMulai: document.getElementById('jadwalJamMulai').value,
         jamSelesai: document.getElementById('jadwalJamSelesai').value,
         token: document.getElementById('jadwalToken').value.toUpperCase(),
-        statusAktif: false // Default sesi non-aktif sebelum diaktifkan admin
+        statusAktif: false
       };
 
       await setDoc(doc(db, "jadwals", id), data);
@@ -1526,14 +1585,13 @@
       const snap = await getDocs(collection(db, "jadwals"));
       let no = 1;
       const now = new Date();
-      const currentTimeStr = now.toTimeString().slice(0, 5); // Format "HH:mm"
+      const currentTimeStr = now.toTimeString().slice(0, 5);
       const currentDateStr = now.toISOString().split('T')[0];
 
       for (let d of snap.docs) {
         const item = d.data();
         let statusAktif = item.statusAktif || false;
 
-        // Pengecekan otomatis: Jika tanggal hari ini sama dan jam sekarang melewati jamSelesai, otomatis non-aktifkan kecuali di-override
         if (item.tgl === currentDateStr && currentTimeStr > item.jamSelesai && statusAktif) {
           statusAktif = false;
           await updateDoc(doc(db, "jadwals", item.id), { statusAktif: false });
