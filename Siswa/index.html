@@ -12,237 +12,39 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-
-    body {
-      background-color: #f1f5f9;
-      color: #1e293b;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* HEADER / NAVBAR */
-    header {
-      background-color: #0d3b36;
-      color: #ffffff;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      height: 62px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .brand img {
-      height: 38px;
-      width: auto;
-    }
-
-    .brand-text h1 {
-      font-size: 1.1rem;
-      font-weight: 800;
-      letter-spacing: 1px;
-      line-height: 1.2;
-    }
-
-    .brand-text p {
-      font-size: 0.6rem;
-      color: #94a3b8;
-      font-weight: 600;
-    }
-
-    /* USER DROPDOWN / LOGOUT */
-    .user-profile-menu {
-      position: relative;
-      cursor: pointer;
-    }
-
-    .user-info-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 6px 14px;
-      border-radius: 30px;
-    }
-
-    .user-avatar {
-      width: 28px;
-      height: 28px;
-      background: #34d399;
-      color: #0d3b36;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.8rem;
-    }
-
-    /* CONTAINER UTAMA */
-    main {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .card-box {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
-    }
-
-    .card-title {
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: #0d3b36;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 15px;
-    }
-
-    .form-group label {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #334155;
-    }
-
-    .form-group input, .form-group select {
-      padding: 12px 14px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-
-    .form-group input:focus, .form-group select:focus {
-      border-color: #0d3b36;
-    }
-
-    .form-group input:disabled {
-      background-color: #f1f5f9;
-      color: #64748b;
-      cursor: not-allowed;
-    }
-
-    .info-box {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      padding: 12px 14px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #0d3b36;
-    }
-
-    .btn {
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
-      width: 100%;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background-color: #0d3b36; color: #ffffff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 100; height: 62px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { height: 38px; width: auto; }
+    .brand-text h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: 1px; line-height: 1.2; }
+    .brand-text p { font-size: 0.6rem; color: #94a3b8; font-weight: 600; }
+    .user-profile-menu { position: relative; cursor: pointer; }
+    .user-info-btn { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.1); padding: 6px 14px; border-radius: 30px; }
+    .user-avatar { width: 28px; height: 28px; background: #34d399; color: #0d3b36; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; }
+    main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+    .card-box { background: #ffffff; padding: 30px; border-radius: 16px; width: 100%; max-width: 480px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); }
+    .card-title { font-size: 1.3rem; font-weight: 800; color: #0d3b36; margin-bottom: 20px; text-align: center; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+    .form-group label { font-size: 0.82rem; font-weight: 700; color: #334155; }
+    .form-group input, .form-group select { padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: #0d3b36; }
+    .form-group input:disabled { background-color: #f1f5f9; color: #64748b; cursor: not-allowed; }
+    .info-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; color: #0d3b36; }
+    .btn { padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; width: 100%; }
     .btn-primary { background: #0d3b36; color: #ffffff; }
     .btn-primary:hover { background: #154d44; }
     .btn-danger { background: #ef4444; color: #ffffff; }
     .btn-danger:hover { background: #dc2626; }
-
-    .error-msg {
-      background: #fef2f2;
-      color: #dc2626;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      margin-bottom: 15px;
-      display: none;
-      border-left: 4px solid #dc2626;
-    }
-
-    /* TAMPILAN MENGERJAKAN UJIAN (FULLSCREEN FIXED DI BAWAH HEADER) */
-    #ujianWorkspace {
-      display: none;
-      flex-direction: column;
-      position: fixed;
-      top: 62px;
-      left: 0;
-      width: 100%;
-      height: calc(100vh - 62px);
-      background: #ffffff;
-      z-index: 50;
-    }
-
-    .ujian-header-bar {
-      background: #1e293b;
-      color: #ffffff;
-      padding: 10px 25px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      flex-shrink: 0;
-    }
-
-    .iframe-container {
-      flex: 1;
-      width: 100%;
-      height: 100%;
-      background: #ffffff;
-    }
-
-    .iframe-container iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    footer {
-      background: linear-gradient(180deg, #ffffff 0%, #d1fae5 100%);
-      padding: 12px;
-      text-align: center;
-    }
-
+    .error-msg { background: #fef2f2; color: #dc2626; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 15px; display: none; border-left: 4px solid #dc2626; }
+    #ujianWorkspace { display: none; flex-direction: column; position: fixed; top: 62px; left: 0; width: 100%; height: calc(100vh - 62px); background: #ffffff; z-index: 50; }
+    .ujian-header-bar { background: #1e293b; color: #ffffff; padding: 10px 25px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; flex-shrink: 0; }
+    .iframe-container { flex: 1; width: 100%; height: 100%; background: #ffffff; }
+    .iframe-container iframe { width: 100%; height: 100%; border: none; }
+    footer { background: linear-gradient(180deg, #ffffff 0%, #d1fae5 100%); padding: 12px; text-align: center; }
     footer img { height: 24px; }
     footer p { font-size: 0.7rem; font-weight: 700; color: #334155; }
-
-    @media (max-width: 768px) {
-      .card-box { padding: 20px; }
-      .brand-text h1 { font-size: 0.95rem; }
-    }
+    @media (max-width: 768px) { .card-box { padding: 20px; } .brand-text h1 { font-size: 0.95rem; } }
   </style>
 </head>
 <body>
@@ -266,10 +68,9 @@
     </div>
   </header>
 
-  <!-- KONTEN UTAMA (DINAMIS SESUAI SESI) -->
+  <!-- KONTEN UTAMA -->
   <main>
-    
-    <!-- 1. HALAMAN LOGIN SISWA -->
+    <!-- 1. LOGIN SISWA -->
     <section id="sectionLogin" class="card-box">
       <h2 class="card-title">Login Siswa</h2>
       <div id="loginError" class="error-msg"></div>
@@ -286,7 +87,7 @@
       </form>
     </section>
 
-    <!-- 2. HALAMAN KONFIRMASI DATA DIRI & TOKEN -->
+    <!-- 2. KONFIRMASI DATA & TOKEN -->
     <section id="sectionKonfirmasi" class="card-box" style="display: none; max-width: 520px;">
       <h2 class="card-title">Konfirmasi Data &amp; Token Ujian</h2>
       <div id="konfirmasiError" class="error-msg"></div>
@@ -315,10 +116,9 @@
         <button type="submit" class="btn btn-primary" id="btnMulaiUjian"><i class="fa-solid fa-play"></i> Mulai Mengerjakan Ujian</button>
       </form>
     </section>
-
   </main>
 
-  <!-- 3. TAMPILAN MENGERJAKAN UJIAN (EMBED GOOGLE FORM) -->
+  <!-- 3. MENGERJAKAN UJIAN -->
   <div id="ujianWorkspace">
     <div class="ujian-header-bar">
       <div><strong id="activeUjianTitle">Ujian</strong> | Mapel: <span id="activeUjianMapel" style="color:#34d399;"></span></div>
@@ -338,11 +138,10 @@
   <!-- INTEGRASI FIREBASE & LOGIKA SISWA -->
   <script type="module">
     import { db } from '../Assets/firebase.js';
-    import { doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     let detectedActiveJadwal = null;
 
-    // CHECK SESSION
     async function checkSiswaSession() {
       const session = JSON.parse(localStorage.getItem('siswaSession'));
       if (session && session.isLoggedIn) {
@@ -370,7 +169,6 @@
     }
     checkSiswaSession();
 
-    // LOGIN SISWA
     document.getElementById('siswaLoginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const u = document.getElementById('loginUsername').value.trim();
@@ -407,7 +205,6 @@
       }
     });
 
-    // DETEKSI OTOMATIS JADWAL BERDASARKAN WAKTU REALTIME & STATUS AKTIF ADMIN
     async function deteksiDanTampilkanJadwalRealtime(session) {
       document.getElementById('sectionKonfirmasi').style.display = 'block';
       document.getElementById('confNama').value = session.nama;
@@ -420,10 +217,10 @@
       detectedActiveJadwal = null;
 
       const now = new Date();
-      const currentDateStr = now.toISOString().split('T')[0]; // Format "YYYY-MM-DD"
+      const currentDateStr = now.toISOString().split('T')[0];
       const currentHours = String(now.getHours()).padStart(2, '0');
       const currentMinutes = String(now.getMinutes()).padStart(2, '0');
-      const currentTimeStr = `${currentHours}:${currentMinutes}`; // Format "HH:mm"
+      const currentTimeStr = `${currentHours}:${currentMinutes}`;
 
       try {
         const jadwalSnap = await getDocs(collection(db, "jadwals"));
@@ -436,8 +233,7 @@
           const tanggalCocok = (j.tgl === currentDateStr);
           const waktuCocok = (currentTimeStr >= j.jamMulai && currentTimeStr <= j.jamSelesai);
 
-          // Syarat: tingkat cocok, diaktifkan admin, tanggal sama, masuk rentang jam, dan belum dikerjakan
-          if ( tingkatCocok && j.statusAktif && tanggalCocok && waktuCocok && !sudahDikerjakan ) {
+          if (tingkatCocok && j.statusAktif && tanggalCocok && waktuCocok && !sudahDikerjakan) {
             matchedJadwal = j;
           }
         });
@@ -457,7 +253,6 @@
       }
     }
 
-    // PROSES VALIDASI & MULAI UJIAN
     document.getElementById('formKonfirmasiUjian').addEventListener('submit', async (e) => {
       e.preventDefault();
       const session = JSON.parse(localStorage.getItem('siswaSession'));
@@ -474,7 +269,6 @@
         return;
       }
 
-      // VALIDASI 1: Aturan Format Kelas Romawi
       const romawiRegex = /^(VII|VIII|IX|X|XI|XII)(\s|-)?([A-Z0-9]+)$/i;
       if (!romawiRegex.test(kelasRombel)) {
         errBox.innerHTML = `<strong>Format Kelas Tidak Sesuai!</strong> Penulisan kelas wajib menggunakan angka Romawi (Contoh: <em>VII A, VIII B, atau IX A</em>).`;
@@ -482,14 +276,12 @@
         return;
       }
 
-      // VALIDASI 2: Cek apakah token sudah pernah digunakan (sudah di riwayat selesai)
       if ((session.ujianSelesai || []).includes(detectedActiveJadwal.id)) {
         errBox.innerHTML = `<strong>Token Sudah Digunakan!</strong> Anda sudah pernah menyelesaikan ujian untuk sesi ini. Token tidak dapat digunakan kembali.`;
         errBox.style.display = 'block';
         return;
       }
 
-      // VALIDASI 3: Cek Kesesuaian Token
       if (detectedActiveJadwal.token !== inputToken) {
         errBox.innerHTML = `<strong>Token Salah!</strong> Token ujian yang Anda masukkan tidak valid untuk mapel <em>${detectedActiveJadwal.mapel}</em>.`;
         errBox.style.display = 'block';
@@ -497,7 +289,6 @@
       }
 
       try {
-        // CARI LINK GOOGLE FORM DARI BANK SOAL GURU
         const soalSnap = await getDocs(collection(db, "bank_soal"));
         let linkGForm = '';
 
@@ -544,7 +335,7 @@
       document.getElementById('iframeGoogleForm').src = linkGForm;
     }
 
-    // TOMBOL KELUAR / SELESAI: Catat ujian selesai & arahkan kembali ke halaman login
+    // FUNGSI SELESAI UJIAN: HANYA MENGUPDATE FIELD ujianSelesai (PASSWORD & DATA LAIN DILINDUNGI)
     window.keluarUjian = async function() {
       if (confirm("Apakah Anda yakin telah selesai mengerjakan dan ingin keluar? Token untuk ujian ini tidak akan bisa digunakan kembali.")) {
         const session = JSON.parse(localStorage.getItem('siswaSession'));
@@ -557,13 +348,10 @@
           }
 
           try {
-            await setDoc(doc(db, "siswas", session.username), {
-              username: session.username,
-              nama: session.nama,
-              kelas: session.kelasTingkat,
-              password: session.password || "",
+            // Menggunakan updateDoc agar HANYA field ujianSelesai yang di-update (password tidak akan hilang/tertimpa)
+            await updateDoc(doc(db, "siswas", session.username), {
               ujianSelesai: session.ujianSelesai
-            }, { merge: true });
+            });
           } catch (e) {
             console.error("Gagal memperbarui riwayat ujian siswa:", e);
           }
