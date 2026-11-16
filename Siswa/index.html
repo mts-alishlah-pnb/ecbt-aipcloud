@@ -30,6 +30,10 @@
     .form-group input, .form-group select { padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none; }
     .form-group input:focus, .form-group select:focus { border-color: #0d3b36; }
     .form-group input:disabled { background-color: #f1f5f9; color: #64748b; cursor: not-allowed; }
+    .password-wrapper { position: relative; display: flex; align-items: center; }
+    .password-wrapper input { width: 100%; padding-right: 45px; }
+    .toggle-password { position: absolute; right: 14px; background: none; border: none; color: #64748b; cursor: pointer; font-size: 1rem; }
+    .toggle-password:hover { color: #0d3b36; }
     .info-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; color: #0d3b36; }
     .btn { padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; width: 100%; }
     .btn-primary { background: #0d3b36; color: #ffffff; }
@@ -81,7 +85,12 @@
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label>Password</label>
-          <input type="password" id="loginPassword" placeholder="Masukkan password..." required>
+          <div class="password-wrapper">
+            <input type="password" id="loginPassword" placeholder="Masukkan password..." required>
+            <button type="button" class="toggle-password" id="togglePasswordBtn" onclick="togglePasswordVisibility()">
+              <i class="fa-solid fa-eye" id="eyeIcon"></i>
+            </button>
+          </div>
         </div>
         <button type="submit" class="btn btn-primary" id="btnSubmitLogin">Masuk Ke Portal Siswa</button>
       </form>
@@ -141,6 +150,21 @@
     import { doc, getDoc, updateDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     let detectedActiveJadwal = null;
+
+    // Fungsi Show/Hide Password Login Siswa
+    window.togglePasswordVisibility = function() {
+      const passwordInput = document.getElementById('loginPassword');
+      const eyeIcon = document.getElementById('eyeIcon');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+      }
+    };
 
     async function checkSiswaSession() {
       const session = JSON.parse(localStorage.getItem('siswaSession'));
@@ -305,6 +329,27 @@
           return;
         }
 
+        // PENCATATAN ABSENSI OTOMATIS KE FIREBASE SAAT SISWA MULAI UJIAN
+        const nowTime = new Date();
+        const daysIndo = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        const hariIni = daysIndo[nowTime.getDay()];
+        const tanggalHariIni = nowTime.toISOString().split('T')[0];
+        const jamLoginStr = nowTime.toTimeString().slice(0, 8); // Format HH:MM:SS
+
+        const absensiId = `${session.username}_${detectedActiveJadwal.id}`;
+        await setDoc(doc(db, "absensis", absensiId), {
+          nisn: session.username,
+          namaPeserta: namaBaru,
+          kelas: kelasRombel, // Ruangan / Rombel spesifik (misal: VII A)
+          nomorPeserta: session.username,
+          hari: hariIni,
+          tanggal: tanggalHariIni,
+          waktuLogin: jamLoginStr,
+          mataPelajaran: detectedActiveJadwal.mapel,
+          ujian: detectedActiveJadwal.ujian,
+          timestamp: nowTime.toISOString()
+        }, { merge: true });
+
         const examSessionData = {
           jadwalId: detectedActiveJadwal.id,
           judul: detectedActiveJadwal.ujian,
@@ -320,7 +365,8 @@
         bukaWorkspaceUjian(detectedActiveJadwal.ujian, detectedActiveJadwal.mapel, linkGForm);
 
       } catch (err) {
-        errBox.innerText = "Terjadi kesalahan saat memvalidasi ujian.";
+        console.error(err);
+        errBox.innerText = "Terjadi kesalahan saat memvalidasi ujian atau mencatat absensi.";
         errBox.style.display = 'block';
       }
     });
@@ -348,7 +394,6 @@
           }
 
           try {
-            // Menggunakan updateDoc agar HANYA field ujianSelesai yang di-update (password tidak akan hilang/tertimpa)
             await updateDoc(doc(db, "siswas", session.username), {
               ujianSelesai: session.ujianSelesai
             });
