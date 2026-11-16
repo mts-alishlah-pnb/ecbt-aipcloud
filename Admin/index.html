@@ -164,6 +164,9 @@
       <button class="sidebar-menu-btn" onclick="switchTab('monitoring')">
         <i class="fa-solid fa-desktop"></i> Pelaksanaan &amp; Monitoring
       </button>
+      <button class="sidebar-menu-btn" onclick="switchTab('absensi')">
+        <i class="fa-solid fa-clipboard-user"></i> Absensi Siswa
+      </button>
     </aside>
 
     <main class="main-content">
@@ -466,6 +469,67 @@
         </div>
       </section>
 
+      <!-- MODUL 7: ABSENSI SISWA -->
+      <section id="tab-absensi" class="tab-pane" style="display: none;">
+        <div class="content-card">
+          <div class="card-header-flex">
+            <div class="card-title"><i class="fa-solid fa-clipboard-user"></i> Rekap Absensi Siswa Ujian</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-excel" onclick="exportAbsensiExcel()"><i class="fa-solid fa-file-arrow-down"></i> Export ke Excel</button>
+              <button class="btn btn-danger" onclick="clearAllData('absensis')"><i class="fa-solid fa-broom"></i> Clear Absensi</button>
+            </div>
+          </div>
+
+          <!-- Filter & Pagination Controls -->
+          <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+            <div class="form-group">
+              <label>Filter Sesi / Mata Pelajaran</label>
+              <select id="filterAbsensiMapel" onchange="loadDataAbsensi()">
+                <option value="ALL">-- Semua Mapel / Sesi --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Filter Ruangan / Kelas</label>
+              <select id="filterAbsensiRuangan" onchange="loadDataAbsensi()">
+                <option value="ALL">-- Semua Kelas / Ruangan --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tampilkan Baris (Pagination)</label>
+              <select id="selectPaginationAbsensi" onchange="loadDataAbsensi()">
+                <option value="10">10 Baris</option>
+                <option value="25">25 Baris</option>
+                <option value="50">50 Baris</option>
+                <option value="ALL">Semua</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabel Sesuai Template Excel Siswa -->
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Waktu Login</th>
+                  <th>Nama Peserta Ujian</th>
+                  <th>Kelas</th>
+                  <th>Nomor Peserta Ujian</th>
+                  <th>Hari</th>
+                  <th>Tanggal</th>
+                  <th>Mata Pelajaran</th>
+                </tr>
+              </thead>
+              <tbody id="tableAbsensiBody">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada data absensi masuk.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -549,6 +613,7 @@
       if (tabName === 'mapel') loadDataMapel();
       if (tabName === 'jadwal') loadDataJadwal();
       if (tabName === 'monitoring') loadDataMonitoring();
+      if (tabName === 'absensi') initAbsensiModule();
     };
 
     async function initAdminAccount() {
@@ -723,7 +788,6 @@
       const nama = document.getElementById('siswaNama').value.trim();
       const kelas = document.getElementById('siswaKelas').value;
 
-      // Ambil data lama agar riwayat ujianSelesai tidak hilang jika meng-update
       const ref = doc(db, "siswas", u);
       const snap = await getDoc(ref);
       const existingUjianSelesai = snap.exists() ? (snap.data().ujianSelesai || []) : [];
@@ -790,7 +854,6 @@
       XLSX.writeFile(wb, "template_siswa.xlsx");
     };
 
-    // FUNGSI IMPORT EXCEL DENGAN KEAMANAN TERKUNCI PADA FIELD PASSWORD
     window.importSiswaExcel = function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -803,14 +866,13 @@
           const data = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
 
           for (let row of data) {
-            // Membaca key secara fleksibel (mengabaikan huruf besar/kecil)
             const nisn = String(row.NISN || row.nisn || row.Username || row.username || '').trim();
             const nama = String(row.Nama || row.nama || '').trim();
             const kelas = String(row.Kelas || row.kelas || 'Kelas 7').trim();
-            const rawPass = row.Password || row.password || row.PASS || row.Password;
+            const rawPass = row.Password || row.password || row.PASS;
             const password = (rawPass !== undefined && rawPass !== null && String(rawPass).trim() !== '') 
                              ? String(rawPass).trim() 
-                             : '123456'; // Fallback default jika di excel tidak terisi
+                             : '123456';
 
             if (nisn && nama) {
               const ref = doc(db, "siswas", nisn);
@@ -1238,6 +1300,147 @@
       loadDataMonitoring();
     };
 
+    // --- 7. MODUL ABSENSI SISWA ---
+    async function initAbsensiModule() {
+      const mapelFilterSel = document.getElementById('filterAbsensiMapel');
+      const ruanganFilterSel = document.getElementById('filterAbsensiRuangan');
+      
+      const currentMapelVal = mapelFilterSel.value;
+      const currentRuanganVal = ruanganFilterSel.value;
+
+      mapelFilterSel.innerHTML = '<option value="ALL">-- Semua Mapel / Sesi --</option>';
+      ruanganFilterSel.innerHTML = '<option value="ALL">-- Semua Kelas / Ruangan --</option>';
+
+      // Ambil opsi mapel dari jadwal
+      const jSnap = await getDocs(collection(db, "jadwals"));
+      const mapelSet = new Set();
+      jSnap.forEach(d => {
+        if (d.data().mapel) mapelSet.add(d.data().mapel);
+      });
+      mapelSet.forEach(m => {
+        mapelFilterSel.innerHTML += `<option value="${m}">${m}</option>`;
+      });
+
+      // Ambil opsi ruangan/kelas dari siswa
+      const sSnap = await getDocs(collection(db, "siswas"));
+      const kelasSet = new Set();
+      sSnap.forEach(d => {
+        if (d.data().kelas) kelasSet.add(d.data().kelas);
+      });
+      kelasSet.forEach(k => {
+        ruanganFilterSel.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+
+      if (mapelFilterSel.querySelector(`option[value="${currentMapelVal}"]`)) {
+        mapelFilterSel.value = currentMapelVal;
+      }
+      if (ruanganFilterSel.querySelector(`option[value="${currentRuanganVal}"]`)) {
+        ruanganFilterSel.value = currentRuanganVal;
+      }
+
+      loadDataAbsensi();
+    }
+
+    window.loadDataAbsensi = async function() {
+      const tbody = document.getElementById('tableAbsensiBody');
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #64748b; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data absensi...</td></tr>';
+
+      const filterMapel = document.getElementById('filterAbsensiMapel').value;
+      const filterRuangan = document.getElementById('filterAbsensiRuangan').value;
+      const paginationVal = document.getElementById('selectPaginationAbsensi').value;
+
+      try {
+        const snap = await getDocs(collection(db, "absensis"));
+        let absensiList = [];
+
+        snap.forEach(d => {
+          absensiList.push(d.data());
+        });
+
+        // Urutkan berdasarkan waktu login terbaru
+        absensiList.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+
+        // Filter berdasarkan mapel & ruangan
+        let filtered = absensiList.filter(item => {
+          const matchMapel = (filterMapel === 'ALL' || item.mataPelajaran === filterMapel);
+          const matchRuangan = (filterRuangan === 'ALL' || item.kelas === filterRuangan);
+          return matchMapel && matchRuangan;
+        });
+
+        // Terapkan pagination
+        let limitCount = filtered.length;
+        if (paginationVal !== 'ALL') {
+          limitCount = parseInt(paginationVal);
+        }
+        const displayedData = filtered.slice(0, limitCount);
+
+        tbody.innerHTML = '';
+        if (displayedData.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 20px;">Tidak ada data absensi yang sesuai filter.</td></tr>`;
+          return;
+        }
+
+        let no = 1;
+        displayedData.forEach(item => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${no++}</td>
+              <td>${item.waktuLogin || '-'}</td>
+              <td><strong>${item.namaPeserta || '-'}</strong></td>
+              <td><span class="badge badge-success">${item.kelas || '-'}</span></td>
+              <td>${item.nomorPeserta || '-'}</td>
+              <td>${item.hari || '-'}</td>
+              <td>${item.tanggal || '-'}</td>
+              <td>${item.mataPelajaran || '-'}</td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 20px;">Gagal memuat data absensi dari server.</td></tr>`;
+      }
+    };
+
+    window.exportAbsensiExcel = async function() {
+      const filterMapel = document.getElementById('filterAbsensiMapel').value;
+      const filterRuangan = document.getElementById('filterAbsensiRuangan').value;
+
+      const snap = await getDocs(collection(db, "absensis"));
+      if (snap.empty) {
+        alert("Tidak ada data absensi untuk diexport.");
+        return;
+      }
+
+      let exportData = [];
+      snap.forEach(d => {
+        const item = d.data();
+        const matchMapel = (filterMapel === 'ALL' || item.mataPelajaran === filterMapel);
+        const matchRuangan = (filterRuangan === 'ALL' || item.kelas === filterRuangan);
+
+        if (matchMapel && matchRuangan) {
+          exportData.push({
+            "Waktu Login": item.waktuLogin || "",
+            "NAMA PESERTA UJIAN": item.namaPeserta || "",
+            "KELAS": item.kelas || "",
+            "NOMOR PESERTA UJIAN": item.nomorPeserta || "",
+            "HARI": item.hari || "",
+            "TANGGAL": item.tanggal || "",
+            "MATA PELAJARAN": item.mataPelajaran || ""
+          });
+        }
+      });
+
+      if (exportData.length === 0) {
+        alert("Tidak ada data yang cocok dengan filter saat ini.");
+        return;
+      }
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Daftar_Hadir");
+      XLSX.writeFile(wb, `Rekap_Absensi_${filterMapel}_${filterRuangan}.xlsx`);
+    };
+
     // --- UTILITY DELETE & CLEAR ALL ---
     window.deleteItem = async function(coll, id) {
       if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
@@ -1247,6 +1450,7 @@
         if (coll === 'gurus') loadDataGuru();
         if (coll === 'mapels') loadDataMapel();
         if (coll === 'jadwals') loadDataJadwal();
+        if (coll === 'absensis') loadDataAbsensi();
       }
     };
 
@@ -1262,6 +1466,7 @@
         if (coll === 'gurus') loadDataGuru();
         if (coll === 'mapels') loadDataMapel();
         if (coll === 'jadwals') loadDataJadwal();
+        if (coll === 'absensis') loadDataAbsensi();
       }
     };
   </script>
