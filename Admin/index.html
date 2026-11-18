@@ -270,6 +270,10 @@
                   <option value="Kelas 9">Kelas 9</option>
                 </select>
               </div>
+              <div class="form-group">
+                <label>Ruangan Ujian</label>
+                <input type="text" id="siswaRuangan" placeholder="Contoh: Ruang 1 / Lab Komputer" required>
+              </div>
             </div>
             <button type="submit" class="btn btn-primary" id="btnSimpanSiswa"><i class="fa-solid fa-user-plus"></i> Tambah Siswa</button>
           </form>
@@ -282,6 +286,7 @@
                   <th>Username/NISN</th>
                   <th>Nama Siswa</th>
                   <th>Tingkat</th>
+                  <th>Ruangan</th>
                   <th>Password</th>
                   <th>Aksi</th>
                 </tr>
@@ -480,18 +485,24 @@
             </div>
           </div>
 
-          <!-- Filter & Pagination Controls -->
+          <!-- 3 Filter & Pagination Controls -->
           <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
             <div class="form-group">
-              <label>Filter Sesi / Mata Pelajaran</label>
+              <label>Filter Mapel / Sesi Ujian</label>
               <select id="filterAbsensiMapel" onchange="loadDataAbsensi()">
                 <option value="ALL">-- Semua Mapel / Sesi --</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Filter Ruangan / Kelas</label>
+              <label>Filter Kelas</label>
+              <select id="filterAbsensiKelas" onchange="loadDataAbsensi()">
+                <option value="ALL">-- Semua Kelas --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Filter Ruangan Ujian</label>
               <select id="filterAbsensiRuangan" onchange="loadDataAbsensi()">
-                <option value="ALL">-- Semua Kelas / Ruangan --</option>
+                <option value="ALL">-- Semua Ruangan --</option>
               </select>
             </div>
             <div class="form-group">
@@ -505,7 +516,7 @@
             </div>
           </div>
 
-          <!-- Tabel Sesuai Template Excel Siswa -->
+          <!-- Tabel Sesuai Template (Termasuk Ruangan Ujian) -->
           <div class="table-container">
             <table>
               <thead>
@@ -514,6 +525,7 @@
                   <th>Waktu Login</th>
                   <th>Nama Peserta Ujian</th>
                   <th>Kelas</th>
+                  <th>Ruangan Ujian</th>
                   <th>Nomor Peserta Ujian</th>
                   <th>Hari</th>
                   <th>Tanggal</th>
@@ -522,7 +534,7 @@
               </thead>
               <tbody id="tableAbsensiBody">
                 <tr>
-                  <td colspan="8" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada data absensi masuk.</td>
+                  <td colspan="9" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada data absensi masuk.</td>
                 </tr>
               </tbody>
             </table>
@@ -787,6 +799,7 @@
       const p = document.getElementById('siswaPass').value.trim();
       const nama = document.getElementById('siswaNama').value.trim();
       const kelas = document.getElementById('siswaKelas').value;
+      const ruangan = document.getElementById('siswaRuangan').value.trim();
 
       const ref = doc(db, "siswas", u);
       const snap = await getDoc(ref);
@@ -797,6 +810,7 @@
         password: p,
         nama: nama,
         kelas: kelas,
+        ruangan: ruangan,
         ujianSelesai: existingUjianSelesai
       }, { merge: true });
 
@@ -815,6 +829,7 @@
         document.getElementById('siswaPass').value = d.password || "";
         document.getElementById('siswaNama').value = d.nama || "";
         document.getElementById('siswaKelas').value = d.kelas || "Kelas 7";
+        document.getElementById('siswaRuangan').value = d.ruangan || "";
         document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-pen"></i> Update Siswa`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -833,6 +848,7 @@
             <td>${item.username}</td>
             <td>${item.nama}</td>
             <td><span class="badge badge-success">${item.kelas}</span></td>
+            <td>${item.ruangan || '-'}</td>
             <td>${item.password || "-"}</td>
             <td>
               <div class="action-btns">
@@ -847,7 +863,7 @@
 
     window.downloadTemplateSiswa = function() {
       const ws = XLSX.utils.json_to_sheet([
-        { NISN: "12345678", Nama: "Ahmad Rifai", Kelas: "Kelas 7", Password: "123" }
+        { NISN: "12345678", Nama: "Ahmad Rifai", Kelas: "Kelas 7", Ruangan: "Ruang 1", Password: "123" }
       ]);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Template_Siswa");
@@ -869,6 +885,7 @@
             const nisn = String(row.NISN || row.nisn || row.Username || row.username || '').trim();
             const nama = String(row.Nama || row.nama || '').trim();
             const kelas = String(row.Kelas || row.kelas || 'Kelas 7').trim();
+            const ruangan = String(row.Ruangan || row.ruangan || '-').trim();
             const rawPass = row.Password || row.password || row.PASS;
             const password = (rawPass !== undefined && rawPass !== null && String(rawPass).trim() !== '') 
                              ? String(rawPass).trim() 
@@ -883,6 +900,7 @@
                 username: nisn,
                 nama: nama,
                 kelas: kelas,
+                ruangan: ruangan,
                 password: password,
                 ujianSelesai: existingUjianSelesai
               }, { merge: true });
@@ -908,9 +926,10 @@
       snap.forEach(d => {
         const item = d.data();
         exportData.push({
+          NISN: item.username || "",
           Nama: item.nama || "",
-          Tingkat: item.kelas || "",
-          Username: item.username || "",
+          Kelas: item.kelas || "",
+          Ruangan: item.ruangan || "",
           Password: item.password || ""
         });
       });
@@ -1303,15 +1322,18 @@
     // --- 7. MODUL ABSENSI SISWA ---
     async function initAbsensiModule() {
       const mapelFilterSel = document.getElementById('filterAbsensiMapel');
+      const kelasFilterSel = document.getElementById('filterAbsensiKelas');
       const ruanganFilterSel = document.getElementById('filterAbsensiRuangan');
       
       const currentMapelVal = mapelFilterSel.value;
+      const currentKelasVal = kelasFilterSel.value;
       const currentRuanganVal = ruanganFilterSel.value;
 
       mapelFilterSel.innerHTML = '<option value="ALL">-- Semua Mapel / Sesi --</option>';
-      ruanganFilterSel.innerHTML = '<option value="ALL">-- Semua Kelas / Ruangan --</option>';
+      kelasFilterSel.innerHTML = '<option value="ALL">-- Semua Kelas --</option>';
+      ruanganFilterSel.innerHTML = '<option value="ALL">-- Semua Ruangan --</option>';
 
-      // Ambil opsi mapel dari jadwal
+      // 1. Ambil opsi mapel dari jadwal
       const jSnap = await getDocs(collection(db, "jadwals"));
       const mapelSet = new Set();
       jSnap.forEach(d => {
@@ -1321,18 +1343,28 @@
         mapelFilterSel.innerHTML += `<option value="${m}">${m}</option>`;
       });
 
-      // Ambil opsi ruangan/kelas dari siswa
+      // 2. Ambil opsi tingkat kelas & ruangan dari siswa
       const sSnap = await getDocs(collection(db, "siswas"));
       const kelasSet = new Set();
+      const ruanganSet = new Set();
       sSnap.forEach(d => {
-        if (d.data().kelas) kelasSet.add(d.data().kelas);
+        const item = d.data();
+        if (item.kelas) kelasSet.add(item.kelas);
+        if (item.ruangan) ruanganSet.add(item.ruangan);
       });
+
       kelasSet.forEach(k => {
-        ruanganFilterSel.innerHTML += `<option value="${k}">${k}</option>`;
+        kelasFilterSel.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+      ruanganSet.forEach(r => {
+        ruanganFilterSel.innerHTML += `<option value="${r}">${r}</option>`;
       });
 
       if (mapelFilterSel.querySelector(`option[value="${currentMapelVal}"]`)) {
         mapelFilterSel.value = currentMapelVal;
+      }
+      if (kelasFilterSel.querySelector(`option[value="${currentKelasVal}"]`)) {
+        kelasFilterSel.value = currentKelasVal;
       }
       if (ruanganFilterSel.querySelector(`option[value="${currentRuanganVal}"]`)) {
         ruanganFilterSel.value = currentRuanganVal;
@@ -1343,9 +1375,10 @@
 
     window.loadDataAbsensi = async function() {
       const tbody = document.getElementById('tableAbsensiBody');
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #64748b; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data absensi...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data absensi...</td></tr>';
 
       const filterMapel = document.getElementById('filterAbsensiMapel').value;
+      const filterKelas = document.getElementById('filterAbsensiKelas').value;
       const filterRuangan = document.getElementById('filterAbsensiRuangan').value;
       const paginationVal = document.getElementById('selectPaginationAbsensi').value;
 
@@ -1360,11 +1393,12 @@
         // Urutkan berdasarkan waktu login terbaru
         absensiList.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
 
-        // Filter berdasarkan mapel & ruangan
+        // Filter berdasarkan 3 kategori (Mapel, Kelas, Ruangan)
         let filtered = absensiList.filter(item => {
           const matchMapel = (filterMapel === 'ALL' || item.mataPelajaran === filterMapel);
-          const matchRuangan = (filterRuangan === 'ALL' || item.kelas === filterRuangan);
-          return matchMapel && matchRuangan;
+          const matchKelas = (filterKelas === 'ALL' || item.kelas === filterKelas);
+          const matchRuangan = (filterRuangan === 'ALL' || item.ruangan === filterRuangan);
+          return matchMapel && matchKelas && matchRuangan;
         });
 
         // Terapkan pagination
@@ -1376,7 +1410,7 @@
 
         tbody.innerHTML = '';
         if (displayedData.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 20px;">Tidak ada data absensi yang sesuai filter.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 20px;">Tidak ada data absensi yang sesuai filter.</td></tr>`;
           return;
         }
 
@@ -1388,6 +1422,7 @@
               <td>${item.waktuLogin || '-'}</td>
               <td><strong>${item.namaPeserta || '-'}</strong></td>
               <td><span class="badge badge-success">${item.kelas || '-'}</span></td>
+              <td><span class="badge badge-warning">${item.ruangan || '-'}</span></td>
               <td>${item.nomorPeserta || '-'}</td>
               <td>${item.hari || '-'}</td>
               <td>${item.tanggal || '-'}</td>
@@ -1397,12 +1432,13 @@
         });
       } catch (err) {
         console.error(err);
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 20px;">Gagal memuat data absensi dari server.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #ef4444; padding: 20px;">Gagal memuat data absensi dari server.</td></tr>`;
       }
     };
 
     window.exportAbsensiExcel = async function() {
       const filterMapel = document.getElementById('filterAbsensiMapel').value;
+      const filterKelas = document.getElementById('filterAbsensiKelas').value;
       const filterRuangan = document.getElementById('filterAbsensiRuangan').value;
 
       const snap = await getDocs(collection(db, "absensis"));
@@ -1415,13 +1451,15 @@
       snap.forEach(d => {
         const item = d.data();
         const matchMapel = (filterMapel === 'ALL' || item.mataPelajaran === filterMapel);
-        const matchRuangan = (filterRuangan === 'ALL' || item.kelas === filterRuangan);
+        const matchKelas = (filterKelas === 'ALL' || item.kelas === filterKelas);
+        const matchRuangan = (filterRuangan === 'ALL' || item.ruangan === filterRuangan);
 
-        if (matchMapel && matchRuangan) {
+        if (matchMapel && matchKelas && matchRuangan) {
           exportData.push({
             "Waktu Login": item.waktuLogin || "",
             "NAMA PESERTA UJIAN": item.namaPeserta || "",
             "KELAS": item.kelas || "",
+            "RUANGAN UJIAN": item.ruangan || "",
             "NOMOR PESERTA UJIAN": item.nomorPeserta || "",
             "HARI": item.hari || "",
             "TANGGAL": item.tanggal || "",
@@ -1438,7 +1476,7 @@
       const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Daftar_Hadir");
-      XLSX.writeFile(wb, `Rekap_Absensi_${filterMapel}_${filterRuangan}.xlsx`);
+      XLSX.writeFile(wb, `Rekap_Absensi_${filterMapel}_${filterKelas}_${filterRuangan}.xlsx`);
     };
 
     // --- UTILITY DELETE & CLEAR ALL ---
