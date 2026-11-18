@@ -111,6 +111,10 @@
           <input type="text" id="confTingkat" disabled>
         </div>
         <div class="form-group">
+          <label>Ruangan Ujian (Otomatis dari Data Admin - Terkunci)</label>
+          <input type="text" id="confRuangan" disabled>
+        </div>
+        <div class="form-group">
           <label>Nama Kelas (Wajib Format Romawi, Contoh: VII A, VIII B, IX C)</label>
           <input type="text" id="confKelasRombel" placeholder="Misal: VIII A" required>
         </div>
@@ -175,7 +179,10 @@
         
         const siswaSnap = await getDoc(doc(db, "siswas", session.username));
         if (siswaSnap.exists()) {
-          session.ujianSelesai = siswaSnap.data().ujianSelesai || [];
+          const sData = siswaSnap.data();
+          session.ujianSelesai = sData.ujianSelesai || [];
+          session.ruangan = sData.ruangan || '-';
+          localStorage.setItem('siswaSession', JSON.stringify(session));
         }
 
         const activeExam = JSON.parse(localStorage.getItem('activeExamSession'));
@@ -212,6 +219,7 @@
             username: data.username,
             nama: data.nama,
             kelasTingkat: data.kelas,
+            ruangan: data.ruangan || '-',
             ujianSelesai: data.ujianSelesai || [],
             isLoggedIn: true
           }));
@@ -233,6 +241,7 @@
       document.getElementById('sectionKonfirmasi').style.display = 'block';
       document.getElementById('confNama').value = session.nama;
       document.getElementById('confTingkat').value = session.kelasTingkat;
+      document.getElementById('confRuangan').value = session.ruangan || '-';
 
       const infoBox = document.getElementById('autoJadwalInfo');
       const btnMulai = document.getElementById('btnMulaiUjian');
@@ -329,7 +338,7 @@
           return;
         }
 
-        // PENCATATAN ABSENSI OTOMATIS KE FIREBASE SAAT SISWA MULAI UJIAN
+        // PENCATATAN ABSENSI OTOMATIS KE FIREBASE (LENGKAP DENGAN RUANGAN)
         const nowTime = new Date();
         const daysIndo = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
         const hariIni = daysIndo[nowTime.getDay()];
@@ -340,7 +349,8 @@
         await setDoc(doc(db, "absensis", absensiId), {
           nisn: session.username,
           namaPeserta: namaBaru,
-          kelas: kelasRombel, // Ruangan / Rombel spesifik (misal: VII A)
+          kelas: kelasRombel, // Rombel spesifik (misal: VII A)
+          ruangan: session.ruangan || '-', // Ruangan ujian siswa dari database admin
           nomorPeserta: session.username,
           hari: hariIni,
           tanggal: tanggalHariIni,
