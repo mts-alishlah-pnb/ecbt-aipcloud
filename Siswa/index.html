@@ -151,9 +151,32 @@
   <!-- INTEGRASI FIREBASE & LOGIKA SISWA -->
   <script type="module">
     import { db } from '../Assets/firebase.js';
-    import { doc, getDoc, updateDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, setDoc, collection, query, where, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     let detectedActiveJadwal = null;
+    const JADWAL_CACHE_TTL_MS = 60 * 1000; // Cache jadwal aktif 60 detik per sesi/perangkat
+
+    // Helper tanggal lokal (YYYY-MM-DD) agar tidak tergeser zona waktu UTC
+    function getLocalDateStr(dateObj = new Date()) {
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getLocalTimeStr(dateObj = new Date()) {
+      const hours = String(dateObj.getHours()).padStart(2, '0');
+      const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    function handleFirestoreError(err, defaultMsg) {
+      console.error(err);
+      if (err && (err.code === 'resource-exhausted' || String(err.message || '').includes('quota'))) {
+        return "Kuota baca harian database sedang penuh. Silakan hubungi Admin/Pengawas.";
+      }
+      return defaultMsg;
+    }
 
     // Fungsi Show/Hide Password Login Siswa
     window.togglePasswordVisibility = function() {
@@ -170,19 +193,33 @@
       }
     };
 
-    async function checkSiswaSession() {
+    async function checkSiswaSession(skipFreshUserFetch = false) {
       const session = JSON.parse(localStorage.getItem('siswaSession'));
       if (session && session.isLoggedIn) {
         document.getElementById('sectionLogin').style.display = 'none';
         document.getElementById('navSiswaProfile').style.display = 'block';
         document.getElementById('headerSiswaName').innerText = session.nama;
-        
-        const siswaSnap = await getDoc(doc(db, "siswas", session.username));
-        if (siswaSnap.exists()) {
-          const sData = siswaSnap.data();
-          session.ujianSelesai = sData.ujianSelesai || [];
-          session.ruangan = sData.ruangan || '-';
-          localStorage.setItem('siswaSession', JSON.stringify(session));
+
+        // Ambil data terbaru siswa hanya jika belum difetch saat login barusan atau sudah > 2 menit
+        const lastFetched = session.lastFetchedAt || 0;
+        const shouldRefreshUser = !skipFreshUserFetch && (Date.now() - lastFetched > 120 * 1000);
+
+        if (shouldRefreshUser) {
+          try {
+            const siswaSnap = await getDoc(doc(db, "siswas", session.username));
+            if (siswaSnap.exists()) {
+              const sData = siswaSnap.data();
+              session.nama = sData.nama || session.nama;
+              session.kelasTingkat = sData.kelas || session.kelasTingkat;
+              session.ujianSelesai = sData.ujianSelesai || [];
+              session.ruangan = sData.ruangan || '-';
+              session.lastFetchedAt = Date.now();
+              localStorage.setItem('siswaSession', JSON.stringify(session));
+              document.getElementById('headerSiswaName').innerText = session.nama;
+            }
+          } catch (err) {
+            console.warn("Gagal menyegarkan profil siswa, memakai cache lokal:", err);
+          }
         }
 
         const activeExam = JSON.parse(localStorage.getItem('activeExamSession'));
@@ -221,15 +258,16 @@
             kelasTingkat: data.kelas,
             ruangan: data.ruangan || '-',
             ujianSelesai: data.ujianSelesai || [],
+            lastFetchedAt: Date.now(),
             isLoggedIn: true
           }));
-          checkSiswaSession();
+          await checkSiswaSession(true);
         } else {
           errBox.innerText = "Username / NISN atau Password salah!";
           errBox.style.display = 'block';
         }
       } catch (err) {
-        errBox.innerText = "Koneksi database bermasalah.";
+        errBox.innerText = handleFirestoreError(err, "Koneksi database bermasalah.");
         errBox.style.display = 'block';
       } finally {
         btn.disabled = false;
@@ -246,21 +284,32 @@
       const infoBox = document.getElementById('autoJadwalInfo');
       const btnMulai = document.getElementById('btnMulaiUjian');
       
-      infoBox.innerHTML = `Mendeteksi waktu realtime...`;
+      infoBox.innerHTML = `Mendeteksi jadwal aktif...`;
       detectedActiveJadwal = null;
 
       const now = new Date();
-      const currentDateStr = now.toISOString().split('T')[0];
-      const currentHours = String(now.getHours()).padStart(2, '0');
-      const currentMinutes = String(now.getMinutes()).padStart(2, '0');
-      const currentTimeStr = `${currentHours}:${currentMinutes}`;
+      const currentDateStr = getLocalDateStr(now);
+      const currentTimeStr = getLocalTimeStr(now);
 
       try {
-        const jadwalSnap = await getDocs(collection(db, "jadwals"));
-        let matchedJadwal = null;
+        let activeDocs = [];
+        const cachedJadwal = JSON.parse(sessionStorage.getItem('cachedActiveJadwals') || 'null');
 
-        jadwalSnap.forEach(d => {
-          const j = d.data();
+        if (cachedJadwal && (Date.now() - cachedJadwal.savedAt < JADWAL_CACHE_TTL_MS)) {
+          activeDocs = cachedJadwal.items || [];
+        } else {
+          // Query hanya jadwal yang statusAktif == true (menghemat reads dibanding membaca seluruh koleksi)
+          const qActive = query(collection(db, "jadwals"), where("statusAktif", "==", true));
+          const jadwalSnap = await getDocs(qActive);
+          jadwalSnap.forEach(d => activeDocs.push(d.data()));
+          sessionStorage.setItem('cachedActiveJadwals', JSON.stringify({
+            savedAt: Date.now(),
+            items: activeDocs
+          }));
+        }
+
+        let matchedJadwal = null;
+        activeDocs.forEach(j => {
           const tingkatCocok = (j.tingkat === session.kelasTingkat || j.tingkat === "Semua Kelas");
           const sudahDikerjakan = (session.ujianSelesai || []).includes(j.id);
           const tanggalCocok = (j.tgl === currentDateStr);
@@ -281,7 +330,7 @@
         }
 
       } catch (err) {
-        infoBox.innerHTML = `<span style="color: #dc2626;">Gagal memuat jadwal ujian.</span>`;
+        infoBox.innerHTML = `<span style="color: #dc2626;">${handleFirestoreError(err, "Gagal memuat jadwal ujian.")}</span>`;
         btnMulai.disabled = true;
       }
     }
@@ -293,6 +342,7 @@
       const kelasRombel = document.getElementById('confKelasRombel').value.trim();
       const inputToken = document.getElementById('confToken').value.trim().toUpperCase();
       const errBox = document.getElementById('konfirmasiError');
+      const btnMulai = document.getElementById('btnMulaiUjian');
 
       errBox.style.display = 'none';
 
@@ -321,13 +371,23 @@
         return;
       }
 
+      btnMulai.disabled = true;
+      btnMulai.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan Ujian...`;
+
       try {
-        const soalSnap = await getDocs(collection(db, "bank_soal"));
+        // Query terfilter untuk bank_soal sesuai mapel & tingkat (limit 1 untuk hemat reads)
+        const qSoal = query(
+          collection(db, "bank_soal"),
+          where("mapel", "==", detectedActiveJadwal.mapel),
+          where("tingkat", "==", session.kelasTingkat),
+          limit(1)
+        );
+        const soalSnap = await getDocs(qSoal);
         let linkGForm = '';
 
         soalSnap.forEach(d => {
           const s = d.data();
-          if (s.mapel === detectedActiveJadwal.mapel && s.tingkat === session.kelasTingkat) {
+          if (s.linkGForm) {
             linkGForm = s.linkGForm;
           }
         });
@@ -335,6 +395,8 @@
         if (!linkGForm) {
           errBox.innerText = "Link Google Form soal belum diunggah oleh Guru pengampu untuk tingkat ini.";
           errBox.style.display = 'block';
+          btnMulai.disabled = false;
+          btnMulai.innerHTML = `<i class="fa-solid fa-play"></i> Mulai Mengerjakan Ujian`;
           return;
         }
 
@@ -342,7 +404,7 @@
         const nowTime = new Date();
         const daysIndo = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
         const hariIni = daysIndo[nowTime.getDay()];
-        const tanggalHariIni = nowTime.toISOString().split('T')[0];
+        const tanggalHariIni = getLocalDateStr(nowTime);
         const jamLoginStr = nowTime.toTimeString().slice(0, 8); // Format HH:MM:SS
 
         const absensiId = `${session.username}_${detectedActiveJadwal.id}`;
@@ -375,9 +437,11 @@
         bukaWorkspaceUjian(detectedActiveJadwal.ujian, detectedActiveJadwal.mapel, linkGForm);
 
       } catch (err) {
-        console.error(err);
-        errBox.innerText = "Terjadi kesalahan saat memvalidasi ujian atau mencatat absensi.";
+        errBox.innerText = handleFirestoreError(err, "Terjadi kesalahan saat memvalidasi ujian atau mencatat absensi.");
         errBox.style.display = 'block';
+      } finally {
+        btnMulai.disabled = false;
+        btnMulai.innerHTML = `<i class="fa-solid fa-play"></i> Mulai Mengerjakan Ujian`;
       }
     });
 
@@ -410,21 +474,21 @@
           } catch (e) {
             console.error("Gagal memperbarui riwayat ujian siswa:", e);
           }
-
-          localStorage.setItem('siswaSession', JSON.stringify(session));
         }
 
         localStorage.removeItem('activeExamSession');
         localStorage.removeItem('siswaSession');
-        checkSiswaSession();
+        sessionStorage.removeItem('cachedActiveJadwals');
+        await checkSiswaSession(true);
       }
     };
 
-    window.logoutSiswa = function() {
+    window.logoutSiswa = async function() {
       if (confirm("Keluar dari akun siswa?")) {
         localStorage.removeItem('siswaSession');
         localStorage.removeItem('activeExamSession');
-        checkSiswaSession();
+        sessionStorage.removeItem('cachedActiveJadwals');
+        await checkSiswaSession(true);
       }
     };
   </script>
