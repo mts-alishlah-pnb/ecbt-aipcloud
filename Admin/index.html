@@ -614,7 +614,7 @@
     import { db } from '../Assets/firebase.js';
     import { doc, getDoc, setDoc, updateDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const ADMIN_CACHE_TTL_MS = 120 * 1000; // Cache koleksi admin 2 menit (atau reset otomatis saat ada ubah/hapus data)
+    const ADMIN_CACHE_TTL_MS = 120 * 1000;
 
     function getLocalDateStr(dateObj = new Date()) {
       const year = dateObj.getFullYear();
@@ -623,10 +623,22 @@
       return `${year}-${month}-${day}`;
     }
 
+    function safeSessionGet(key) {
+      try { return sessionStorage.getItem(key); } catch (_) { return null; }
+    }
+
+    function safeSessionSet(key, val) {
+      try { sessionStorage.setItem(key, val); } catch (_) {}
+    }
+
+    function safeSessionRemove(key) {
+      try { sessionStorage.removeItem(key); } catch (_) {}
+    }
+
     async function getCachedCollection(collName, forceRefresh = false) {
       const cacheKey = `admin_cache_${collName}`;
       if (!forceRefresh) {
-        const raw = sessionStorage.getItem(cacheKey);
+        const raw = safeSessionGet(cacheKey);
         if (raw) {
           try {
             const parsed = JSON.parse(raw);
@@ -640,7 +652,7 @@
       const snap = await getDocs(collection(db, collName));
       const items = [];
       snap.forEach(d => items.push(d.data()));
-      sessionStorage.setItem(cacheKey, JSON.stringify({
+      safeSessionSet(cacheKey, JSON.stringify({
         savedAt: Date.now(),
         items
       }));
@@ -649,10 +661,10 @@
 
     function invalidateAdminCache(collName = null) {
       if (collName) {
-        sessionStorage.removeItem(`admin_cache_${collName}`);
+        safeSessionRemove(`admin_cache_${collName}`);
       } else {
         ['ujian', 'siswas', 'gurus', 'mapels', 'jadwals', 'absensis'].forEach(c => {
-          sessionStorage.removeItem(`admin_cache_${c}`);
+          safeSessionRemove(`admin_cache_${c}`);
         });
       }
     }
@@ -670,150 +682,7 @@
     });
     window.addEventListener('click', () => userDropdown?.classList.remove('show'));
 
-    window.switchTab = function(tabName, btnEl = null) {
-      document.querySelectorAll('.sidebar-menu-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(pane => pane.style.display = 'none');
-
-      if (btnEl) {
-        btnEl.classList.add('active');
-      } else if (typeof event !== 'undefined' && event?.currentTarget) {
-        event.currentTarget.classList.add('active');
-      }
-      document.getElementById(`tab-${tabName}`).style.display = 'block';
-
-      if (tabName === 'beranda') loadDataBeranda();
-      if (tabName === 'siswa') loadDataSiswa();
-      if (tabName === 'guru') loadDataGuru();
-      if (tabName === 'mapel') loadDataMapel();
-      if (tabName === 'jadwal') loadDataJadwal();
-      if (tabName === 'monitoring') loadDataMonitoring();
-      if (tabName === 'absensi') initAbsensiModule();
-    };
-
-    async function initAdminAccount() {
-      try {
-        const adminRef = doc(db, "admins", "admin");
-        const adminSnap = await getDoc(adminRef);
-        if (!adminSnap.exists()) {
-          await setDoc(adminRef, {
-            username: "admin",
-            password: "admin123",
-            nama: "Administrator Utama"
-          });
-        }
-      } catch (e) { console.error(e); }
-    }
-    initAdminAccount();
-
-    function checkSession() {
-      const session = JSON.parse(localStorage.getItem('adminSession'));
-      if (session && session.isLoggedIn) {
-        document.getElementById('landingSection').style.display = 'none';
-        document.getElementById('dashboardWrapper').style.display = 'flex';
-        document.getElementById('navGuest').style.display = 'none';
-        document.getElementById('navAdmin').style.display = 'block';
-        document.getElementById('headerAdminName').innerText = session.nama || 'Administrator';
-        document.getElementById('profUsername').value = session.username;
-        loadDataBeranda();
-      } else {
-        document.getElementById('landingSection').style.display = 'grid';
-        document.getElementById('dashboardWrapper').style.display = 'none';
-        document.getElementById('navGuest').style.display = 'flex';
-        document.getElementById('navAdmin').style.display = 'none';
-      }
-    }
-    checkSession();
-
-    document.getElementById('openModalBtn')?.addEventListener('click', () => toggleModal('loginModal'));
-    document.getElementById('openLoginModalNav')?.addEventListener('click', () => toggleModal('loginModal'));
-
-    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const u = document.getElementById('username').value.trim();
-      const p = document.getElementById('password').value.trim();
-      const btn = document.getElementById('btnSubmitLogin');
-
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...`;
-
-      try {
-        const adminSnap = await getDoc(doc(db, "admins", u));
-        if (adminSnap.exists() && adminSnap.data().password === p) {
-          localStorage.setItem('adminSession', JSON.stringify({
-            username: u,
-            nama: adminSnap.data().nama,
-            isLoggedIn: true
-          }));
-          toggleModal('loginModal');
-          checkSession();
-        } else {
-          alert('Username atau password salah!');
-        }
-      } catch (err) {
-        alert('Koneksi terganggu.');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<span>Masuk Ke Dashboard</span>`;
-      }
-    });
-
-    document.getElementById('btnLogout').addEventListener('click', () => {
-      localStorage.removeItem('adminSession');
-      invalidateAdminCache();
-      checkSession();
-    });
-
-    document.getElementById('btnOpenProfilModal').addEventListener('click', () => toggleModal('profilModal'));
-    document.getElementById('formGantiProfil').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const session = JSON.parse(localStorage.getItem('adminSession'));
-      const oldPass = document.getElementById('profOldPass').value;
-      const newPass = document.getElementById('profNewPass').value;
-
-      try {
-        const ref = doc(db, "admins", session.username);
-        const snap = await getDoc(ref);
-        if (snap.exists() && snap.data().password === oldPass) {
-          await updateDoc(ref, { password: newPass });
-          alert("Profil & Password berhasil diubah!");
-          toggleModal('profilModal');
-          document.getElementById('formGantiProfil').reset();
-        } else {
-          alert("Password lama tidak cocok.");
-        }
-      } catch (err) { alert("Gagal menyimpan profil."); }
-    });
-
     // --- 1. MODUL BERANDA (EVENT UJIAN) ---
-    document.getElementById('formBuatUjian').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const editId = document.getElementById('editUjianId').value;
-      const nama = document.getElementById('namaUjianInput').value;
-      const tglMulai = document.getElementById('tglMulaiInput').value;
-      const tglSelesai = document.getElementById('tglSelesaiInput').value;
-      const id = editId ? editId : 'ujian_' + Date.now();
-
-      await setDoc(doc(db, "ujian", id), { id, nama, tglMulai, tglSelesai });
-      invalidateAdminCache('ujian');
-      document.getElementById('formBuatUjian').reset();
-      document.getElementById('editUjianId').value = '';
-      document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Event Ujian`;
-      loadDataBeranda(true);
-    });
-
-    window.editUjian = async function(id) {
-      const list = await getCachedCollection('ujian');
-      const d = list.find(x => x.id === id);
-      if (d) {
-        document.getElementById('editUjianId').value = d.id;
-        document.getElementById('namaUjianInput').value = d.nama;
-        document.getElementById('tglMulaiInput').value = d.tglMulai;
-        document.getElementById('tglSelesaiInput').value = d.tglSelesai;
-        document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-pen"></i> Update Event Ujian`;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
     window.loadDataBeranda = async function(forceRefresh = false) {
       const tbody = document.getElementById('tableUjianBody');
       tbody.innerHTML = '';
@@ -855,7 +724,61 @@
       document.getElementById('statTotalGuru').innerText = guruList.length;
     };
 
+    document.getElementById('formBuatUjian').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editId = document.getElementById('editUjianId').value;
+      const nama = document.getElementById('namaUjianInput').value;
+      const tglMulai = document.getElementById('tglMulaiInput').value;
+      const tglSelesai = document.getElementById('tglSelesaiInput').value;
+      const id = editId ? editId : 'ujian_' + Date.now();
+
+      await setDoc(doc(db, "ujian", id), { id, nama, tglMulai, tglSelesai });
+      invalidateAdminCache('ujian');
+      document.getElementById('formBuatUjian').reset();
+      document.getElementById('editUjianId').value = '';
+      document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Event Ujian`;
+      await loadDataBeranda(true);
+    });
+
+    window.editUjian = async function(id) {
+      const list = await getCachedCollection('ujian');
+      const d = list.find(x => x.id === id);
+      if (d) {
+        document.getElementById('editUjianId').value = d.id;
+        document.getElementById('namaUjianInput').value = d.nama;
+        document.getElementById('tglMulaiInput').value = d.tglMulai;
+        document.getElementById('tglSelesaiInput').value = d.tglSelesai;
+        document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-pen"></i> Update Event Ujian`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
     // --- 2. MODUL DATA SISWA ---
+    window.loadDataSiswa = async function(forceRefresh = false) {
+      const tbody = document.getElementById('tableSiswaBody');
+      tbody.innerHTML = '';
+      const list = await getCachedCollection('siswas', forceRefresh);
+      let no = 1;
+      list.forEach(item => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${no++}</td>
+            <td>${item.username}</td>
+            <td>${item.nama}</td>
+            <td><span class="badge badge-success">${item.kelas}</span></td>
+            <td>${item.ruangan || '-'}</td>
+            <td>${item.password || "-"}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-warning" onclick="editSiswa('${item.username}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn btn-danger" onclick="deleteItem('siswas', '${item.username}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    };
+
     document.getElementById('formInputSiswa').addEventListener('submit', async (e) => {
       e.preventDefault();
       const u = document.getElementById('siswaUser').value.trim();
@@ -881,7 +804,7 @@
       document.getElementById('formInputSiswa').reset();
       document.getElementById('siswaUser').disabled = false;
       document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-user-plus"></i> Tambah Siswa`;
-      loadDataSiswa(true);
+      await loadDataSiswa(true);
     });
 
     window.editSiswa = async function(username) {
@@ -897,31 +820,6 @@
         document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-pen"></i> Update Siswa`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    };
-
-    window.loadDataSiswa = async function(forceRefresh = false) {
-      const tbody = document.getElementById('tableSiswaBody');
-      tbody.innerHTML = '';
-      const list = await getCachedCollection('siswas', forceRefresh);
-      let no = 1;
-      list.forEach(item => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${no++}</td>
-            <td>${item.username}</td>
-            <td>${item.nama}</td>
-            <td><span class="badge badge-success">${item.kelas}</span></td>
-            <td>${item.ruangan || '-'}</td>
-            <td>${item.password || "-"}</td>
-            <td>
-              <div class="action-btns">
-                <button class="btn btn-warning" onclick="editSiswa('${item.username}')"><i class="fa-solid fa-pen"></i></button>
-                <button class="btn btn-danger" onclick="deleteItem('siswas', '${item.username}')"><i class="fa-solid fa-trash"></i></button>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
     };
 
     window.downloadTemplateSiswa = function() {
@@ -971,7 +869,7 @@
           }
           invalidateAdminCache('siswas');
           alert("Import Data Siswa Berhasil!");
-          loadDataSiswa(true);
+          await loadDataSiswa(true);
         } catch (err) {
           console.error(err);
           alert("Gagal membaca file Excel! Pastikan format file sesuai.");
@@ -1041,68 +939,6 @@
       });
     }
 
-    document.getElementById('formInputGuru').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const u = document.getElementById('guruUser').value.trim();
-      const p = document.getElementById('guruPass').value.trim();
-      const nama = document.getElementById('guruNama').value.trim();
-
-      const mapelCards = document.querySelectorAll('.mapel-assignment-card');
-      const assignments = {};
-      let totalAssigned = 0;
-
-      mapelCards.forEach(card => {
-        const mapelName = card.getAttribute('data-mapel');
-        const checkedTingkat = card.querySelectorAll(`input[name="mapel_tingkat_${mapelName}"]:checked`);
-        if (checkedTingkat.length > 0) {
-          assignments[mapelName] = Array.from(checkedTingkat).map(cb => cb.value);
-          totalAssigned++;
-        }
-      });
-
-      if (totalAssigned === 0) {
-        alert("Pilih setidaknya satu mata pelajaran dan tingkat kelasnya!");
-        return;
-      }
-
-      await setDoc(doc(db, "gurus", u), {
-        username: u,
-        password: p,
-        nama: nama,
-        assignments: assignments
-      }, { merge: true });
-
-      invalidateAdminCache('gurus');
-      document.getElementById('formInputGuru').reset();
-      document.getElementById('guruUser').disabled = false;
-      document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Guru`;
-      renderGuruAssignmentForm();
-      loadDataGuru(true);
-    });
-
-    window.editGuru = async function(username) {
-      const list = await getCachedCollection('gurus');
-      const d = list.find(x => x.username === username);
-      if (d) {
-        const assignments = d.assignments || {};
-
-        if (!d.assignments && d.mapel && d.tingkat) {
-          const mapels = d.mapel.split(",").map(s => s.trim());
-          const tings = d.tingkat.split(",").map(s => s.trim());
-          mapels.forEach(m => { assignments[m] = tings; });
-        }
-
-        await renderGuruAssignmentForm(assignments);
-
-        document.getElementById('guruUser').value = d.username;
-        document.getElementById('guruUser').disabled = true;
-        document.getElementById('guruPass').value = d.password;
-        document.getElementById('guruNama').value = d.nama;
-        document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-pen"></i> Update Guru`;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
     window.loadDataGuru = async function(forceRefresh = false) {
       await renderGuruAssignmentForm();
       const tbody = document.getElementById('tableGuruBody');
@@ -1138,6 +974,67 @@
       });
     };
 
+    document.getElementById('formInputGuru').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('guruUser').value.trim();
+      const p = document.getElementById('guruPass').value.trim();
+      const nama = document.getElementById('guruNama').value.trim();
+
+      const mapelCards = document.querySelectorAll('.mapel-assignment-card');
+      const assignments = {};
+      let totalAssigned = 0;
+
+      mapelCards.forEach(card => {
+        const mapelName = card.getAttribute('data-mapel');
+        const checkedTingkat = card.querySelectorAll(`input[name="mapel_tingkat_${mapelName}"]:checked`);
+        if (checkedTingkat.length > 0) {
+          assignments[mapelName] = Array.from(checkedTingkat).map(cb => cb.value);
+          totalAssigned++;
+        }
+      });
+
+      if (totalAssigned === 0) {
+        alert("Pilih setidaknya satu mata pelajaran dan tingkat kelasnya!");
+        return;
+      }
+
+      await setDoc(doc(db, "gurus", u), {
+        username: u,
+        password: p,
+        nama: nama,
+        assignments: assignments
+      }, { merge: true });
+
+      invalidateAdminCache('gurus');
+      document.getElementById('formInputGuru').reset();
+      document.getElementById('guruUser').disabled = false;
+      document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Guru`;
+      await loadDataGuru(true);
+    });
+
+    window.editGuru = async function(username) {
+      const list = await getCachedCollection('gurus');
+      const d = list.find(x => x.username === username);
+      if (d) {
+        const assignments = d.assignments || {};
+
+        if (!d.assignments && d.mapel && d.tingkat) {
+          const mapels = d.mapel.split(",").map(s => s.trim());
+          const tings = d.tingkat.split(",").map(s => s.trim());
+          mapels.forEach(m => { assignments[m] = tings; });
+        }
+
+        await renderGuruAssignmentForm(assignments);
+
+        document.getElementById('guruUser').value = d.username;
+        document.getElementById('guruUser').disabled = true;
+        document.getElementById('guruPass').value = d.password;
+        document.getElementById('guruNama').value = d.nama;
+        document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-pen"></i> Update Guru`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
     window.downloadTemplateGuru = function() {
       const ws = XLSX.utils.json_to_sheet([
         { Username: "guru_informatika", Password: "123", Nama: "Budi Santoso, S.Kom.", Keterangan: "Atur penugasan langsung melalui Dashboard Admin" }
@@ -1147,7 +1044,7 @@
       XLSX.writeFile(wb, "template tambah guru.xlsx");
     };
 
-    window.importGuruExcel = function(e) {
+    window.importGuruExcel = function() {
       alert("Fitur import Excel untuk struktur multi-mapel tingkat spesifik dapat disesuaikan melalui form interaktif admin.");
     };
 
@@ -1181,39 +1078,6 @@
     };
 
     // --- 4. MODUL MAPEL ---
-    document.getElementById('formInputMapel').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const oldKode = document.getElementById('editMapelOldKode').value;
-      const kode = document.getElementById('mapelKode').value.trim().toUpperCase();
-      const nama = document.getElementById('mapelNama').value.trim();
-
-      if (oldKode && oldKode !== kode) {
-        await deleteDoc(doc(db, "mapels", oldKode));
-      }
-
-      await setDoc(doc(db, "mapels", kode), { kode, nama });
-      invalidateAdminCache('mapels');
-      document.getElementById('formInputMapel').reset();
-      document.getElementById('editMapelOldKode').value = '';
-      document.getElementById('mapelKode').disabled = false;
-      document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Mapel`;
-      loadDataMapel(true);
-      renderGuruAssignmentForm();
-    });
-
-    window.editMapel = async function(kode) {
-      const list = await getCachedCollection('mapels');
-      const d = list.find(x => x.kode === kode);
-      if (d) {
-        document.getElementById('editMapelOldKode').value = d.kode;
-        document.getElementById('mapelKode').value = d.kode;
-        document.getElementById('mapelKode').disabled = true;
-        document.getElementById('mapelNama').value = d.nama;
-        document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-pen"></i> Update Mapel`;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
     window.loadDataMapel = async function(forceRefresh = false) {
       const tbody = document.getElementById('tableMapelBody');
       tbody.innerHTML = '';
@@ -1234,6 +1098,39 @@
           </tr>
         `;
       });
+    };
+
+    document.getElementById('formInputMapel').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const oldKode = document.getElementById('editMapelOldKode').value;
+      const kode = document.getElementById('mapelKode').value.trim().toUpperCase();
+      const nama = document.getElementById('mapelNama').value.trim();
+
+      if (oldKode && oldKode !== kode) {
+        await deleteDoc(doc(db, "mapels", oldKode));
+      }
+
+      await setDoc(doc(db, "mapels", kode), { kode, nama });
+      invalidateAdminCache('mapels');
+      document.getElementById('formInputMapel').reset();
+      document.getElementById('editMapelOldKode').value = '';
+      document.getElementById('mapelKode').disabled = false;
+      document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Mapel`;
+      await loadDataMapel(true);
+      await renderGuruAssignmentForm();
+    });
+
+    window.editMapel = async function(kode) {
+      const list = await getCachedCollection('mapels');
+      const d = list.find(x => x.kode === kode);
+      if (d) {
+        document.getElementById('editMapelOldKode').value = d.kode;
+        document.getElementById('mapelKode').value = d.kode;
+        document.getElementById('mapelKode').disabled = true;
+        document.getElementById('mapelNama').value = d.nama;
+        document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-pen"></i> Update Mapel`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     };
 
     // --- 5. MODUL JADWAL & TOKEN ---
@@ -1259,48 +1156,6 @@
       mList.forEach(m => mapelSel.innerHTML += `<option value="${m.nama}">${m.nama}</option>`);
     }
 
-    document.getElementById('formInputJadwal').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const editId = document.getElementById('editJadwalId').value;
-      const id = editId ? editId : 'jdwl_' + Date.now();
-      const data = {
-        id,
-        ujian: document.getElementById('jadwalUjianSelect').value,
-        mapel: document.getElementById('jadwalMapelSelect').value,
-        tingkat: document.getElementById('jadwalTingkatSelect').value,
-        tgl: document.getElementById('jadwalTgl').value,
-        jamMulai: document.getElementById('jadwalJamMulai').value,
-        jamSelesai: document.getElementById('jadwalJamSelesai').value,
-        token: document.getElementById('jadwalToken').value.toUpperCase(),
-        statusAktif: false
-      };
-
-      await setDoc(doc(db, "jadwals", id), data);
-      invalidateAdminCache('jadwals');
-      document.getElementById('formInputJadwal').reset();
-      document.getElementById('editJadwalId').value = '';
-      document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token`;
-      loadDataJadwal(true);
-    });
-
-    window.editJadwal = async function(id) {
-      await populateJadwalSelects();
-      const list = await getCachedCollection('jadwals');
-      const d = list.find(x => x.id === id);
-      if (d) {
-        document.getElementById('editJadwalId').value = d.id;
-        document.getElementById('jadwalUjianSelect').value = d.ujian;
-        document.getElementById('jadwalMapelSelect').value = d.mapel;
-        document.getElementById('jadwalTingkatSelect').value = d.tingkat;
-        document.getElementById('jadwalTgl').value = d.tgl;
-        document.getElementById('jadwalJamMulai').value = d.jamMulai;
-        document.getElementById('jadwalJamSelesai').value = d.jamSelesai;
-        document.getElementById('jadwalToken').value = d.token;
-        document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-pen"></i> Update Jadwal`;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
     window.loadDataJadwal = async function(forceRefresh = false) {
       await populateJadwalSelects(forceRefresh);
       const tbody = document.getElementById('tableJadwalBody');
@@ -1324,6 +1179,48 @@
           </tr>
         `;
       });
+    };
+
+    document.getElementById('formInputJadwal').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editId = document.getElementById('editJadwalId').value;
+      const id = editId ? editId : 'jdwl_' + Date.now();
+      const data = {
+        id,
+        ujian: document.getElementById('jadwalUjianSelect').value,
+        mapel: document.getElementById('jadwalMapelSelect').value,
+        tingkat: document.getElementById('jadwalTingkatSelect').value,
+        tgl: document.getElementById('jadwalTgl').value,
+        jamMulai: document.getElementById('jadwalJamMulai').value,
+        jamSelesai: document.getElementById('jadwalJamSelesai').value,
+        token: document.getElementById('jadwalToken').value.toUpperCase(),
+        statusAktif: false
+      };
+
+      await setDoc(doc(db, "jadwals", id), data);
+      invalidateAdminCache('jadwals');
+      document.getElementById('formInputJadwal').reset();
+      document.getElementById('editJadwalId').value = '';
+      document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token`;
+      await loadDataJadwal(true);
+    });
+
+    window.editJadwal = async function(id) {
+      await populateJadwalSelects();
+      const list = await getCachedCollection('jadwals');
+      const d = list.find(x => x.id === id);
+      if (d) {
+        document.getElementById('editJadwalId').value = d.id;
+        document.getElementById('jadwalUjianSelect').value = d.ujian;
+        document.getElementById('jadwalMapelSelect').value = d.mapel;
+        document.getElementById('jadwalTingkatSelect').value = d.tingkat;
+        document.getElementById('jadwalTgl').value = d.tgl;
+        document.getElementById('jadwalJamMulai').value = d.jamMulai;
+        document.getElementById('jadwalJamSelesai').value = d.jamSelesai;
+        document.getElementById('jadwalToken').value = d.token;
+        document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-pen"></i> Update Jadwal`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     };
 
     // --- 6. MODUL MONITORING & PELAKSANAAN UJIAN ---
@@ -1369,7 +1266,7 @@
       }
 
       if (hasAutoClosed) {
-        sessionStorage.setItem('admin_cache_jadwals', JSON.stringify({
+        safeSessionSet('admin_cache_jadwals', JSON.stringify({
           savedAt: Date.now(),
           items: list
         }));
@@ -1383,10 +1280,65 @@
     window.toggleSesiUjian = async function(id, newState) {
       await updateDoc(doc(db, "jadwals", id), { statusAktif: newState });
       invalidateAdminCache('jadwals');
-      loadDataMonitoring(true);
+      await loadDataMonitoring(true);
     };
 
     // --- 7. MODUL ABSENSI SISWA ---
+    window.loadDataAbsensi = async function(forceRefresh = false) {
+      const tbody = document.getElementById('tableAbsensiBody');
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data absensi...</td></tr>';
+
+      const filterMapel = document.getElementById('filterAbsensiMapel').value;
+      const filterKelas = document.getElementById('filterAbsensiKelas').value;
+      const filterRuangan = document.getElementById('filterAbsensiRuangan').value;
+      const paginationVal = document.getElementById('selectPaginationAbsensi').value;
+
+      try {
+        const absensiList = [...(await getCachedCollection('absensis', forceRefresh))];
+
+        absensiList.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+
+        let filtered = absensiList.filter(item => {
+          const matchMapel = (filterMapel === 'ALL' || item.mataPelajaran === filterMapel);
+          const matchKelas = (filterKelas === 'ALL' || item.kelas === filterKelas);
+          const matchRuangan = (filterRuangan === 'ALL' || item.ruangan === filterRuangan);
+          return matchMapel && matchKelas && matchRuangan;
+        });
+
+        let limitCount = filtered.length;
+        if (paginationVal !== 'ALL') {
+          limitCount = parseInt(paginationVal);
+        }
+        const displayedData = filtered.slice(0, limitCount);
+
+        tbody.innerHTML = '';
+        if (displayedData.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 20px;">Tidak ada data absensi yang sesuai filter.</td></tr>`;
+          return;
+        }
+
+        let no = 1;
+        displayedData.forEach(item => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${no++}</td>
+              <td>${item.waktuLogin || '-'}</td>
+              <td><strong>${item.namaPeserta || '-'}</strong></td>
+              <td><span class="badge badge-success">${item.kelas || '-'}</span></td>
+              <td><span class="badge badge-warning">${item.ruangan || '-'}</span></td>
+              <td>${item.nomorPeserta || '-'}</td>
+              <td>${item.hari || '-'}</td>
+              <td>${item.tanggal || '-'}</td>
+              <td>${item.mataPelajaran || '-'}</td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #ef4444; padding: 20px;">Gagal memuat data absensi dari server.</td></tr>`;
+      }
+    };
+
     window.initAbsensiModule = async function(forceRefresh = false) {
       const mapelFilterSel = document.getElementById('filterAbsensiMapel');
       const kelasFilterSel = document.getElementById('filterAbsensiKelas');
@@ -1437,64 +1389,6 @@
       await loadDataAbsensi(forceRefresh);
     };
 
-    window.loadDataAbsensi = async function(forceRefresh = false) {
-      const tbody = document.getElementById('tableAbsensiBody');
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data absensi...</td></tr>';
-
-      const filterMapel = document.getElementById('filterAbsensiMapel').value;
-      const filterKelas = document.getElementById('filterAbsensiKelas').value;
-      const filterRuangan = document.getElementById('filterAbsensiRuangan').value;
-      const paginationVal = document.getElementById('selectPaginationAbsensi').value;
-
-      try {
-        const absensiList = [...(await getCachedCollection('absensis', forceRefresh))];
-
-        // Urutkan berdasarkan waktu login terbaru
-        absensiList.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
-
-        // Filter berdasarkan 3 kategori (Mapel, Kelas, Ruangan)
-        let filtered = absensiList.filter(item => {
-          const matchMapel = (filterMapel === 'ALL' || item.mataPelajaran === filterMapel);
-          const matchKelas = (filterKelas === 'ALL' || item.kelas === filterKelas);
-          const matchRuangan = (filterRuangan === 'ALL' || item.ruangan === filterRuangan);
-          return matchMapel && matchKelas && matchRuangan;
-        });
-
-        // Terapkan pagination
-        let limitCount = filtered.length;
-        if (paginationVal !== 'ALL') {
-          limitCount = parseInt(paginationVal);
-        }
-        const displayedData = filtered.slice(0, limitCount);
-
-        tbody.innerHTML = '';
-        if (displayedData.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 20px;">Tidak ada data absensi yang sesuai filter.</td></tr>`;
-          return;
-        }
-
-        let no = 1;
-        displayedData.forEach(item => {
-          tbody.innerHTML += `
-            <tr>
-              <td>${no++}</td>
-              <td>${item.waktuLogin || '-'}</td>
-              <td><strong>${item.namaPeserta || '-'}</strong></td>
-              <td><span class="badge badge-success">${item.kelas || '-'}</span></td>
-              <td><span class="badge badge-warning">${item.ruangan || '-'}</span></td>
-              <td>${item.nomorPeserta || '-'}</td>
-              <td>${item.hari || '-'}</td>
-              <td>${item.tanggal || '-'}</td>
-              <td>${item.mataPelajaran || '-'}</td>
-            </tr>
-          `;
-        });
-      } catch (err) {
-        console.error(err);
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #ef4444; padding: 20px;">Gagal memuat data absensi dari server.</td></tr>`;
-      }
-    };
-
     window.exportAbsensiExcel = async function() {
       const filterMapel = document.getElementById('filterAbsensiMapel').value;
       const filterKelas = document.getElementById('filterAbsensiKelas').value;
@@ -1542,12 +1436,12 @@
       if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
         await deleteDoc(doc(db, coll, id));
         invalidateAdminCache(coll);
-        if (coll === 'ujian') loadDataBeranda(true);
-        if (coll === 'siswas') loadDataSiswa(true);
-        if (coll === 'gurus') loadDataGuru(true);
-        if (coll === 'mapels') loadDataMapel(true);
-        if (coll === 'jadwals') loadDataJadwal(true);
-        if (coll === 'absensis') loadDataAbsensi(true);
+        if (coll === 'ujian') await loadDataBeranda(true);
+        if (coll === 'siswas') await loadDataSiswa(true);
+        if (coll === 'gurus') await loadDataGuru(true);
+        if (coll === 'mapels') await loadDataMapel(true);
+        if (coll === 'jadwals') await loadDataJadwal(true);
+        if (coll === 'absensis') await loadDataAbsensi(true);
       }
     };
 
@@ -1559,14 +1453,128 @@
         }
         invalidateAdminCache(coll);
         alert("Seluruh data berhasil dibersihkan!");
-        if (coll === 'ujian') loadDataBeranda(true);
-        if (coll === 'siswas') loadDataSiswa(true);
-        if (coll === 'gurus') loadDataGuru(true);
-        if (coll === 'mapels') loadDataMapel(true);
-        if (coll === 'jadwals') loadDataJadwal(true);
-        if (coll === 'absensis') loadDataAbsensi(true);
+        if (coll === 'ujian') await loadDataBeranda(true);
+        if (coll === 'siswas') await loadDataSiswa(true);
+        if (coll === 'gurus') await loadDataGuru(true);
+        if (coll === 'mapels') await loadDataMapel(true);
+        if (coll === 'jadwals') await loadDataJadwal(true);
+        if (coll === 'absensis') await loadDataAbsensi(true);
       }
     };
+
+    window.switchTab = function(tabName, btnEl = null) {
+      document.querySelectorAll('.sidebar-menu-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.style.display = 'none');
+
+      if (btnEl) {
+        btnEl.classList.add('active');
+      }
+      document.getElementById(`tab-${tabName}`).style.display = 'block';
+
+      if (tabName === 'beranda') loadDataBeranda();
+      if (tabName === 'siswa') loadDataSiswa();
+      if (tabName === 'guru') loadDataGuru();
+      if (tabName === 'mapel') loadDataMapel();
+      if (tabName === 'jadwal') loadDataJadwal();
+      if (tabName === 'monitoring') loadDataMonitoring();
+      if (tabName === 'absensi') initAbsensiModule();
+    };
+
+    async function initAdminAccount() {
+      try {
+        const adminRef = doc(db, "admins", "admin");
+        const adminSnap = await getDoc(adminRef);
+        if (!adminSnap.exists()) {
+          await setDoc(adminRef, {
+            username: "admin",
+            password: "admin123",
+            nama: "Administrator Utama"
+          });
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function checkSession() {
+      const session = JSON.parse(localStorage.getItem('adminSession'));
+      if (session && session.isLoggedIn) {
+        document.getElementById('landingSection').style.display = 'none';
+        document.getElementById('dashboardWrapper').style.display = 'flex';
+        document.getElementById('navGuest').style.display = 'none';
+        document.getElementById('navAdmin').style.display = 'block';
+        document.getElementById('headerAdminName').innerText = session.nama || 'Administrator';
+        document.getElementById('profUsername').value = session.username;
+        loadDataBeranda();
+      } else {
+        document.getElementById('landingSection').style.display = 'grid';
+        document.getElementById('dashboardWrapper').style.display = 'none';
+        document.getElementById('navGuest').style.display = 'flex';
+        document.getElementById('navAdmin').style.display = 'none';
+      }
+    }
+
+    document.getElementById('openModalBtn')?.addEventListener('click', () => toggleModal('loginModal'));
+    document.getElementById('openLoginModalNav')?.addEventListener('click', () => toggleModal('loginModal'));
+
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+      const btn = document.getElementById('btnSubmitLogin');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...`;
+
+      try {
+        const adminSnap = await getDoc(doc(db, "admins", u));
+        if (adminSnap.exists() && adminSnap.data().password === p) {
+          localStorage.setItem('adminSession', JSON.stringify({
+            username: u,
+            nama: adminSnap.data().nama,
+            isLoggedIn: true
+          }));
+          toggleModal('loginModal');
+          checkSession();
+        } else {
+          alert('Username atau password salah!');
+        }
+      } catch (err) {
+        alert('Koneksi terganggu.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Masuk Ke Dashboard</span>`;
+      }
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      localStorage.removeItem('adminSession');
+      invalidateAdminCache();
+      checkSession();
+    });
+
+    document.getElementById('btnOpenProfilModal').addEventListener('click', () => toggleModal('profilModal'));
+    document.getElementById('formGantiProfil').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const session = JSON.parse(localStorage.getItem('adminSession'));
+      const oldPass = document.getElementById('profOldPass').value;
+      const newPass = document.getElementById('profNewPass').value;
+
+      try {
+        const ref = doc(db, "admins", session.username);
+        const snap = await getDoc(ref);
+        if (snap.exists() && snap.data().password === oldPass) {
+          await updateDoc(ref, { password: newPass });
+          alert("Profil & Password berhasil diubah!");
+          toggleModal('profilModal');
+          document.getElementById('formGantiProfil').reset();
+        } else {
+          alert("Password lama tidak cocok.");
+        }
+      } catch (err) { alert("Gagal menyimpan profil."); }
+    });
+
+    // Jalankan inisialisasi setelah semua fungsi siap
+    initAdminAccount();
+    checkSession();
   </script>
 
 </body>
