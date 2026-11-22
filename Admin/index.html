@@ -146,25 +146,25 @@
   <!-- DASHBOARD UTAMA ADMIN -->
   <div id="dashboardWrapper">
     <aside class="sidebar">
-      <button class="sidebar-menu-btn active" onclick="switchTab('beranda')">
+      <button class="sidebar-menu-btn active" onclick="switchTab('beranda', this)">
         <i class="fa-solid fa-house"></i> Beranda
       </button>
-      <button class="sidebar-menu-btn" onclick="switchTab('siswa')">
+      <button class="sidebar-menu-btn" onclick="switchTab('siswa', this)">
         <i class="fa-solid fa-users"></i> Data Siswa
       </button>
-      <button class="sidebar-menu-btn" onclick="switchTab('guru')">
+      <button class="sidebar-menu-btn" onclick="switchTab('guru', this)">
         <i class="fa-solid fa-chalkboard-user"></i> Data Guru
       </button>
-      <button class="sidebar-menu-btn" onclick="switchTab('mapel')">
+      <button class="sidebar-menu-btn" onclick="switchTab('mapel', this)">
         <i class="fa-solid fa-book"></i> Mata Pelajaran
       </button>
-      <button class="sidebar-menu-btn" onclick="switchTab('jadwal')">
+      <button class="sidebar-menu-btn" onclick="switchTab('jadwal', this)">
         <i class="fa-solid fa-calendar-days"></i> Jadwal &amp; Token
       </button>
-      <button class="sidebar-menu-btn" onclick="switchTab('monitoring')">
+      <button class="sidebar-menu-btn" onclick="switchTab('monitoring', this)">
         <i class="fa-solid fa-desktop"></i> Pelaksanaan &amp; Monitoring
       </button>
-      <button class="sidebar-menu-btn" onclick="switchTab('absensi')">
+      <button class="sidebar-menu-btn" onclick="switchTab('absensi', this)">
         <i class="fa-solid fa-clipboard-user"></i> Absensi Siswa
       </button>
     </aside>
@@ -222,7 +222,10 @@
         <div class="content-card">
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-list"></i> Daftar Event Ujian</div>
-            <button class="btn btn-danger" onclick="clearAllData('ujian')"><i class="fa-solid fa-broom"></i> Clear All Ujian</button>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="loadDataBeranda(true)"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+              <button class="btn btn-danger" onclick="clearAllData('ujian')"><i class="fa-solid fa-broom"></i> Clear All Ujian</button>
+            </div>
           </div>
           <div class="table-container">
             <table>
@@ -247,6 +250,7 @@
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-users"></i> Kelola Data Siswa</div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="loadDataSiswa(true)"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
               <button class="btn btn-excel" onclick="downloadTemplateSiswa()"><i class="fa-solid fa-file-excel"></i> Template Excel</button>
               <label class="btn btn-primary" style="margin: 0; cursor: pointer;">
                 <i class="fa-solid fa-file-import"></i> Import Excel
@@ -303,6 +307,7 @@
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-chalkboard-user"></i> Kelola Data Guru</div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="loadDataGuru(true)"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
               <button class="btn btn-excel" onclick="downloadTemplateGuru()"><i class="fa-solid fa-file-excel"></i> Template Excel</button>
               <label class="btn btn-primary" style="margin: 0; cursor: pointer;">
                 <i class="fa-solid fa-file-import"></i> Import Excel
@@ -352,7 +357,10 @@
         <div class="content-card">
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-book"></i> Master Mata Pelajaran</div>
-            <button class="btn btn-danger" onclick="clearAllData('mapels')"><i class="fa-solid fa-broom"></i> Clear All Mapel</button>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="loadDataMapel(true)"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+              <button class="btn btn-danger" onclick="clearAllData('mapels')"><i class="fa-solid fa-broom"></i> Clear All Mapel</button>
+            </div>
           </div>
 
           <form id="formInputMapel" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
@@ -385,7 +393,10 @@
         <div class="content-card">
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-calendar-days"></i> Penjadwalan &amp; Generator Token</div>
-            <button class="btn btn-danger" onclick="clearAllData('jadwals')"><i class="fa-solid fa-broom"></i> Clear All Jadwal</button>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="loadDataJadwal(true)"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+              <button class="btn btn-danger" onclick="clearAllData('jadwals')"><i class="fa-solid fa-broom"></i> Clear All Jadwal</button>
+            </div>
           </div>
 
           <form id="formInputJadwal" style="margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px;">
@@ -446,7 +457,10 @@
       <!-- MODUL 6: MONITORING & PELAKSANAAN UJIAN -->
       <section id="tab-monitoring" class="tab-pane" style="display: none;">
         <div class="content-card">
-          <div class="card-title" style="margin-bottom: 20px;"><i class="fa-solid fa-desktop"></i> Pelaksanaan &amp; Monitoring Sesi Ujian</div>
+          <div class="card-header-flex">
+            <div class="card-title"><i class="fa-solid fa-desktop"></i> Pelaksanaan &amp; Monitoring Sesi Ujian</div>
+            <button class="btn btn-primary" onclick="loadDataMonitoring(true)"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+          </div>
           <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
             Aktifkan sesi ujian untuk memvalidasi token siswa. Sesi akan otomatis tertutup saat jam selesai tercapai kecuali diaktifkan kembali secara manual.
           </p>
@@ -480,6 +494,7 @@
           <div class="card-header-flex">
             <div class="card-title"><i class="fa-solid fa-clipboard-user"></i> Rekap Absensi Siswa Ujian</div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="initAbsensiModule(true)"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
               <button class="btn btn-excel" onclick="exportAbsensiExcel()"><i class="fa-solid fa-file-arrow-down"></i> Export ke Excel</button>
               <button class="btn btn-danger" onclick="clearAllData('absensis')"><i class="fa-solid fa-broom"></i> Clear Absensi</button>
             </div>
@@ -599,6 +614,49 @@
     import { db } from '../Assets/firebase.js';
     import { doc, getDoc, setDoc, updateDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+    const ADMIN_CACHE_TTL_MS = 120 * 1000; // Cache koleksi admin 2 menit (atau reset otomatis saat ada ubah/hapus data)
+
+    function getLocalDateStr(dateObj = new Date()) {
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    async function getCachedCollection(collName, forceRefresh = false) {
+      const cacheKey = `admin_cache_${collName}`;
+      if (!forceRefresh) {
+        const raw = sessionStorage.getItem(cacheKey);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Date.now() - parsed.savedAt < ADMIN_CACHE_TTL_MS && Array.isArray(parsed.items)) {
+              return parsed.items;
+            }
+          } catch (_) {}
+        }
+      }
+
+      const snap = await getDocs(collection(db, collName));
+      const items = [];
+      snap.forEach(d => items.push(d.data()));
+      sessionStorage.setItem(cacheKey, JSON.stringify({
+        savedAt: Date.now(),
+        items
+      }));
+      return items;
+    }
+
+    function invalidateAdminCache(collName = null) {
+      if (collName) {
+        sessionStorage.removeItem(`admin_cache_${collName}`);
+      } else {
+        ['ujian', 'siswas', 'gurus', 'mapels', 'jadwals', 'absensis'].forEach(c => {
+          sessionStorage.removeItem(`admin_cache_${c}`);
+        });
+      }
+    }
+
     window.toggleModal = function(id) {
       const el = document.getElementById(id);
       el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
@@ -612,11 +670,15 @@
     });
     window.addEventListener('click', () => userDropdown?.classList.remove('show'));
 
-    window.switchTab = function(tabName) {
+    window.switchTab = function(tabName, btnEl = null) {
       document.querySelectorAll('.sidebar-menu-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(pane => pane.style.display = 'none');
 
-      event.currentTarget.classList.add('active');
+      if (btnEl) {
+        btnEl.classList.add('active');
+      } else if (typeof event !== 'undefined' && event?.currentTarget) {
+        event.currentTarget.classList.add('active');
+      }
       document.getElementById(`tab-${tabName}`).style.display = 'block';
 
       if (tabName === 'beranda') loadDataBeranda();
@@ -697,6 +759,7 @@
 
     document.getElementById('btnLogout').addEventListener('click', () => {
       localStorage.removeItem('adminSession');
+      invalidateAdminCache();
       checkSession();
     });
 
@@ -731,16 +794,17 @@
       const id = editId ? editId : 'ujian_' + Date.now();
 
       await setDoc(doc(db, "ujian", id), { id, nama, tglMulai, tglSelesai });
+      invalidateAdminCache('ujian');
       document.getElementById('formBuatUjian').reset();
       document.getElementById('editUjianId').value = '';
       document.getElementById('btnSimpanUjian').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Event Ujian`;
-      loadDataBeranda();
+      loadDataBeranda(true);
     });
 
     window.editUjian = async function(id) {
-      const snap = await getDoc(doc(db, "ujian", id));
-      if (snap.exists()) {
-        const d = snap.data();
+      const list = await getCachedCollection('ujian');
+      const d = list.find(x => x.id === id);
+      if (d) {
         document.getElementById('editUjianId').value = d.id;
         document.getElementById('namaUjianInput').value = d.nama;
         document.getElementById('tglMulaiInput').value = d.tglMulai;
@@ -750,16 +814,15 @@
       }
     };
 
-    async function loadDataBeranda() {
+    window.loadDataBeranda = async function(forceRefresh = false) {
       const tbody = document.getElementById('tableUjianBody');
       tbody.innerHTML = '';
-      const snap = await getDocs(collection(db, "ujian"));
+      const ujianList = await getCachedCollection('ujian', forceRefresh);
 
       let countAktif = 0, countSelesai = 0, no = 1;
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateStr();
 
-      snap.forEach(d => {
-        const item = d.data();
+      ujianList.forEach(item => {
         let statusBadge = `<span class="badge badge-warning">Belum Dimulai</span>`;
         if (today >= item.tglMulai && today <= item.tglSelesai) {
           statusBadge = `<span class="badge badge-success">Berlangsung (Aktif)</span>`;
@@ -788,9 +851,9 @@
       document.getElementById('statUjianAktif').innerText = countAktif;
       document.getElementById('statUjianSelesai').innerText = countSelesai;
 
-      const guruSnap = await getDocs(collection(db, "gurus"));
-      document.getElementById('statTotalGuru').innerText = guruSnap.size;
-    }
+      const guruList = await getCachedCollection('gurus', forceRefresh);
+      document.getElementById('statTotalGuru').innerText = guruList.length;
+    };
 
     // --- 2. MODUL DATA SISWA ---
     document.getElementById('formInputSiswa').addEventListener('submit', async (e) => {
@@ -814,16 +877,17 @@
         ujianSelesai: existingUjianSelesai
       }, { merge: true });
 
+      invalidateAdminCache('siswas');
       document.getElementById('formInputSiswa').reset();
       document.getElementById('siswaUser').disabled = false;
       document.getElementById('btnSimpanSiswa').innerHTML = `<i class="fa-solid fa-user-plus"></i> Tambah Siswa`;
-      loadDataSiswa();
+      loadDataSiswa(true);
     });
 
     window.editSiswa = async function(username) {
-      const snap = await getDoc(doc(db, "siswas", username));
-      if (snap.exists()) {
-        const d = snap.data();
+      const list = await getCachedCollection('siswas');
+      const d = list.find(x => x.username === username);
+      if (d) {
         document.getElementById('siswaUser').value = d.username;
         document.getElementById('siswaUser').disabled = true;
         document.getElementById('siswaPass').value = d.password || "";
@@ -835,13 +899,12 @@
       }
     };
 
-    async function loadDataSiswa() {
+    window.loadDataSiswa = async function(forceRefresh = false) {
       const tbody = document.getElementById('tableSiswaBody');
       tbody.innerHTML = '';
-      const snap = await getDocs(collection(db, "siswas"));
+      const list = await getCachedCollection('siswas', forceRefresh);
       let no = 1;
-      snap.forEach(d => {
-        const item = d.data();
+      list.forEach(item => {
         tbody.innerHTML += `
           <tr>
             <td>${no++}</td>
@@ -859,7 +922,7 @@
           </tr>
         `;
       });
-    }
+    };
 
     window.downloadTemplateSiswa = function() {
       const ws = XLSX.utils.json_to_sheet([
@@ -906,8 +969,9 @@
               }, { merge: true });
             }
           }
+          invalidateAdminCache('siswas');
           alert("Import Data Siswa Berhasil!");
-          loadDataSiswa();
+          loadDataSiswa(true);
         } catch (err) {
           console.error(err);
           alert("Gagal membaca file Excel! Pastikan format file sesuai.");
@@ -917,22 +981,18 @@
     };
 
     window.exportDataSiswa = async function() {
-      const snap = await getDocs(collection(db, "siswas"));
-      if (snap.empty) {
+      const list = await getCachedCollection('siswas');
+      if (list.length === 0) {
         alert("Tidak ada data siswa untuk diexport.");
         return;
       }
-      const exportData = [];
-      snap.forEach(d => {
-        const item = d.data();
-        exportData.push({
-          NISN: item.username || "",
-          Nama: item.nama || "",
-          Kelas: item.kelas || "",
-          Ruangan: item.ruangan || "",
-          Password: item.password || ""
-        });
-      });
+      const exportData = list.map(item => ({
+        NISN: item.username || "",
+        Nama: item.nama || "",
+        Kelas: item.kelas || "",
+        Ruangan: item.ruangan || "",
+        Password: item.password || ""
+      }));
       const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Data_Siswa");
@@ -943,17 +1003,16 @@
     async function renderGuruAssignmentForm(savedAssignments = {}) {
       const container = document.getElementById('guruMapelAssignmentContainer');
       container.innerHTML = '';
-      const snap = await getDocs(collection(db, "mapels"));
+      const mapelList = await getCachedCollection('mapels');
 
-      if (snap.empty) {
+      if (mapelList.length === 0) {
         container.innerHTML = '<small style="color: #94a3b8;">Belum ada master mapel. Tambahkan data di menu Mata Pelajaran lebih dulu.</small>';
         return;
       }
 
       const tingkatOptions = ["Kelas 7", "Kelas 8", "Kelas 9", "Olimpiade"];
 
-      snap.forEach(d => {
-        const m = d.data();
+      mapelList.forEach(m => {
         const mapelName = m.nama;
         const selectedTingkatForThisMapel = savedAssignments[mapelName] || [];
 
@@ -1013,17 +1072,18 @@
         assignments: assignments
       }, { merge: true });
 
+      invalidateAdminCache('gurus');
       document.getElementById('formInputGuru').reset();
       document.getElementById('guruUser').disabled = false;
       document.getElementById('btnSimpanGuru').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Guru`;
       renderGuruAssignmentForm();
-      loadDataGuru();
+      loadDataGuru(true);
     });
 
     window.editGuru = async function(username) {
-      const snap = await getDoc(doc(db, "gurus", username));
-      if (snap.exists()) {
-        const d = snap.data();
+      const list = await getCachedCollection('gurus');
+      const d = list.find(x => x.username === username);
+      if (d) {
         const assignments = d.assignments || {};
 
         if (!d.assignments && d.mapel && d.tingkat) {
@@ -1043,15 +1103,14 @@
       }
     };
 
-    async function loadDataGuru() {
+    window.loadDataGuru = async function(forceRefresh = false) {
       await renderGuruAssignmentForm();
       const tbody = document.getElementById('tableGuruBody');
       tbody.innerHTML = '';
-      const snap = await getDocs(collection(db, "gurus"));
+      const list = await getCachedCollection('gurus', forceRefresh);
       let no = 1;
 
-      snap.forEach(d => {
-        const item = d.data();
+      list.forEach(item => {
         let assignmentSummary = '-';
 
         if (item.assignments) {
@@ -1077,7 +1136,7 @@
           </tr>
         `;
       });
-    }
+    };
 
     window.downloadTemplateGuru = function() {
       const ws = XLSX.utils.json_to_sheet([
@@ -1093,14 +1152,12 @@
     };
 
     window.exportDataGuru = async function() {
-      const snap = await getDocs(collection(db, "gurus"));
-      if (snap.empty) {
+      const list = await getCachedCollection('gurus');
+      if (list.length === 0) {
         alert("Tidak ada data guru untuk diexport.");
         return;
       }
-      const exportData = [];
-      snap.forEach(d => {
-        const item = d.data();
+      const exportData = list.map(item => {
         let mapelTingkatStr = "";
         if (item.assignments) {
           mapelTingkatStr = Object.entries(item.assignments)
@@ -1110,12 +1167,12 @@
           mapelTingkatStr = `${item.mapel} (${item.tingkat || '-'})`;
         }
 
-        exportData.push({
+        return {
           Nama: item.nama || "",
           Username: item.username || "",
           Password: item.password || "",
           "Mapel & Tingkat Diampu": mapelTingkatStr
-        });
+        };
       });
       const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();
@@ -1135,18 +1192,19 @@
       }
 
       await setDoc(doc(db, "mapels", kode), { kode, nama });
+      invalidateAdminCache('mapels');
       document.getElementById('formInputMapel').reset();
       document.getElementById('editMapelOldKode').value = '';
       document.getElementById('mapelKode').disabled = false;
       document.getElementById('btnSimpanMapel').innerHTML = `<i class="fa-solid fa-plus"></i> Tambah Mapel`;
-      loadDataMapel();
+      loadDataMapel(true);
       renderGuruAssignmentForm();
     });
 
     window.editMapel = async function(kode) {
-      const snap = await getDoc(doc(db, "mapels", kode));
-      if (snap.exists()) {
-        const d = snap.data();
+      const list = await getCachedCollection('mapels');
+      const d = list.find(x => x.kode === kode);
+      if (d) {
         document.getElementById('editMapelOldKode').value = d.kode;
         document.getElementById('mapelKode').value = d.kode;
         document.getElementById('mapelKode').disabled = true;
@@ -1156,13 +1214,12 @@
       }
     };
 
-    async function loadDataMapel() {
+    window.loadDataMapel = async function(forceRefresh = false) {
       const tbody = document.getElementById('tableMapelBody');
       tbody.innerHTML = '';
-      const snap = await getDocs(collection(db, "mapels"));
+      const list = await getCachedCollection('mapels', forceRefresh);
       let no = 1;
-      snap.forEach(d => {
-        const item = d.data();
+      list.forEach(item => {
         tbody.innerHTML += `
           <tr>
             <td>${no++}</td>
@@ -1177,7 +1234,7 @@
           </tr>
         `;
       });
-    }
+    };
 
     // --- 5. MODUL JADWAL & TOKEN ---
     window.generateRandomToken = function() {
@@ -1189,17 +1246,17 @@
       document.getElementById('jadwalToken').value = token;
     };
 
-    async function populateJadwalSelects() {
+    async function populateJadwalSelects(forceRefresh = false) {
       const ujianSel = document.getElementById('jadwalUjianSelect');
       const mapelSel = document.getElementById('jadwalMapelSelect');
       ujianSel.innerHTML = '<option value="">-- Pilih Ujian --</option>';
       mapelSel.innerHTML = '<option value="">-- Pilih Mapel --</option>';
 
-      const uSnap = await getDocs(collection(db, "ujian"));
-      uSnap.forEach(d => ujianSel.innerHTML += `<option value="${d.data().nama}">${d.data().nama}</option>`);
+      const uList = await getCachedCollection('ujian', forceRefresh);
+      uList.forEach(u => ujianSel.innerHTML += `<option value="${u.nama}">${u.nama}</option>`);
 
-      const mSnap = await getDocs(collection(db, "mapels"));
-      mSnap.forEach(d => mapelSel.innerHTML += `<option value="${d.data().nama}">${d.data().nama}</option>`);
+      const mList = await getCachedCollection('mapels', forceRefresh);
+      mList.forEach(m => mapelSel.innerHTML += `<option value="${m.nama}">${m.nama}</option>`);
     }
 
     document.getElementById('formInputJadwal').addEventListener('submit', async (e) => {
@@ -1219,17 +1276,18 @@
       };
 
       await setDoc(doc(db, "jadwals", id), data);
+      invalidateAdminCache('jadwals');
       document.getElementById('formInputJadwal').reset();
       document.getElementById('editJadwalId').value = '';
       document.getElementById('btnSimpanJadwal').innerHTML = `<i class="fa-solid fa-calendar-plus"></i> Simpan Jadwal &amp; Token`;
-      loadDataJadwal();
+      loadDataJadwal(true);
     });
 
     window.editJadwal = async function(id) {
       await populateJadwalSelects();
-      const snap = await getDoc(doc(db, "jadwals", id));
-      if (snap.exists()) {
-        const d = snap.data();
+      const list = await getCachedCollection('jadwals');
+      const d = list.find(x => x.id === id);
+      if (d) {
         document.getElementById('editJadwalId').value = d.id;
         document.getElementById('jadwalUjianSelect').value = d.ujian;
         document.getElementById('jadwalMapelSelect').value = d.mapel;
@@ -1243,14 +1301,13 @@
       }
     };
 
-    async function loadDataJadwal() {
-      await populateJadwalSelects();
+    window.loadDataJadwal = async function(forceRefresh = false) {
+      await populateJadwalSelects(forceRefresh);
       const tbody = document.getElementById('tableJadwalBody');
       tbody.innerHTML = '';
-      const snap = await getDocs(collection(db, "jadwals"));
+      const list = await getCachedCollection('jadwals', forceRefresh);
       let no = 1;
-      snap.forEach(d => {
-        const item = d.data();
+      list.forEach(item => {
         tbody.innerHTML += `
           <tr>
             <td>${no++}</td>
@@ -1267,24 +1324,26 @@
           </tr>
         `;
       });
-    }
+    };
 
     // --- 6. MODUL MONITORING & PELAKSANAAN UJIAN ---
-    async function loadDataMonitoring() {
+    window.loadDataMonitoring = async function(forceRefresh = false) {
       const tbody = document.getElementById('tableMonitoringBody');
       tbody.innerHTML = '';
-      const snap = await getDocs(collection(db, "jadwals"));
+      const list = await getCachedCollection('jadwals', forceRefresh);
       let no = 1;
       const now = new Date();
       const currentTimeStr = now.toTimeString().slice(0, 5);
-      const currentDateStr = now.toISOString().split('T')[0];
+      const currentDateStr = getLocalDateStr(now);
+      let hasAutoClosed = false;
 
-      for (let d of snap.docs) {
-        const item = d.data();
+      for (let item of list) {
         let statusAktif = item.statusAktif || false;
 
         if (item.tgl === currentDateStr && currentTimeStr > item.jamSelesai && statusAktif) {
           statusAktif = false;
+          item.statusAktif = false;
+          hasAutoClosed = true;
           await updateDoc(doc(db, "jadwals", item.id), { statusAktif: false });
         }
 
@@ -1309,18 +1368,26 @@
         `;
       }
 
+      if (hasAutoClosed) {
+        sessionStorage.setItem('admin_cache_jadwals', JSON.stringify({
+          savedAt: Date.now(),
+          items: list
+        }));
+      }
+
       if (no === 1) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 20px;">Belum ada jadwal sesi ujian.</td></tr>`;
       }
-    }
+    };
 
     window.toggleSesiUjian = async function(id, newState) {
       await updateDoc(doc(db, "jadwals", id), { statusAktif: newState });
-      loadDataMonitoring();
+      invalidateAdminCache('jadwals');
+      loadDataMonitoring(true);
     };
 
     // --- 7. MODUL ABSENSI SISWA ---
-    async function initAbsensiModule() {
+    window.initAbsensiModule = async function(forceRefresh = false) {
       const mapelFilterSel = document.getElementById('filterAbsensiMapel');
       const kelasFilterSel = document.getElementById('filterAbsensiKelas');
       const ruanganFilterSel = document.getElementById('filterAbsensiRuangan');
@@ -1333,22 +1400,19 @@
       kelasFilterSel.innerHTML = '<option value="ALL">-- Semua Kelas --</option>';
       ruanganFilterSel.innerHTML = '<option value="ALL">-- Semua Ruangan --</option>';
 
-      // 1. Ambil opsi mapel dari jadwal
-      const jSnap = await getDocs(collection(db, "jadwals"));
+      const jList = await getCachedCollection('jadwals', forceRefresh);
       const mapelSet = new Set();
-      jSnap.forEach(d => {
-        if (d.data().mapel) mapelSet.add(d.data().mapel);
+      jList.forEach(j => {
+        if (j.mapel) mapelSet.add(j.mapel);
       });
       mapelSet.forEach(m => {
         mapelFilterSel.innerHTML += `<option value="${m}">${m}</option>`;
       });
 
-      // 2. Ambil opsi tingkat kelas & ruangan dari siswa
-      const sSnap = await getDocs(collection(db, "siswas"));
+      const sList = await getCachedCollection('siswas', forceRefresh);
       const kelasSet = new Set();
       const ruanganSet = new Set();
-      sSnap.forEach(d => {
-        const item = d.data();
+      sList.forEach(item => {
         if (item.kelas) kelasSet.add(item.kelas);
         if (item.ruangan) ruanganSet.add(item.ruangan);
       });
@@ -1370,10 +1434,10 @@
         ruanganFilterSel.value = currentRuanganVal;
       }
 
-      loadDataAbsensi();
-    }
+      await loadDataAbsensi(forceRefresh);
+    };
 
-    window.loadDataAbsensi = async function() {
+    window.loadDataAbsensi = async function(forceRefresh = false) {
       const tbody = document.getElementById('tableAbsensiBody');
       tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data absensi...</td></tr>';
 
@@ -1383,12 +1447,7 @@
       const paginationVal = document.getElementById('selectPaginationAbsensi').value;
 
       try {
-        const snap = await getDocs(collection(db, "absensis"));
-        let absensiList = [];
-
-        snap.forEach(d => {
-          absensiList.push(d.data());
-        });
+        const absensiList = [...(await getCachedCollection('absensis', forceRefresh))];
 
         // Urutkan berdasarkan waktu login terbaru
         absensiList.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
@@ -1441,15 +1500,14 @@
       const filterKelas = document.getElementById('filterAbsensiKelas').value;
       const filterRuangan = document.getElementById('filterAbsensiRuangan').value;
 
-      const snap = await getDocs(collection(db, "absensis"));
-      if (snap.empty) {
+      const absensiList = await getCachedCollection('absensis');
+      if (absensiList.length === 0) {
         alert("Tidak ada data absensi untuk diexport.");
         return;
       }
 
       let exportData = [];
-      snap.forEach(d => {
-        const item = d.data();
+      absensiList.forEach(item => {
         const matchMapel = (filterMapel === 'ALL' || item.mataPelajaran === filterMapel);
         const matchKelas = (filterKelas === 'ALL' || item.kelas === filterKelas);
         const matchRuangan = (filterRuangan === 'ALL' || item.ruangan === filterRuangan);
@@ -1483,12 +1541,13 @@
     window.deleteItem = async function(coll, id) {
       if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
         await deleteDoc(doc(db, coll, id));
-        if (coll === 'ujian') loadDataBeranda();
-        if (coll === 'siswas') loadDataSiswa();
-        if (coll === 'gurus') loadDataGuru();
-        if (coll === 'mapels') loadDataMapel();
-        if (coll === 'jadwals') loadDataJadwal();
-        if (coll === 'absensis') loadDataAbsensi();
+        invalidateAdminCache(coll);
+        if (coll === 'ujian') loadDataBeranda(true);
+        if (coll === 'siswas') loadDataSiswa(true);
+        if (coll === 'gurus') loadDataGuru(true);
+        if (coll === 'mapels') loadDataMapel(true);
+        if (coll === 'jadwals') loadDataJadwal(true);
+        if (coll === 'absensis') loadDataAbsensi(true);
       }
     };
 
@@ -1498,13 +1557,14 @@
         for (let d of snap.docs) {
           await deleteDoc(doc(db, coll, d.id));
         }
+        invalidateAdminCache(coll);
         alert("Seluruh data berhasil dibersihkan!");
-        if (coll === 'ujian') loadDataBeranda();
-        if (coll === 'siswas') loadDataSiswa();
-        if (coll === 'gurus') loadDataGuru();
-        if (coll === 'mapels') loadDataMapel();
-        if (coll === 'jadwals') loadDataJadwal();
-        if (coll === 'absensis') loadDataAbsensi();
+        if (coll === 'ujian') loadDataBeranda(true);
+        if (coll === 'siswas') loadDataSiswa(true);
+        if (coll === 'gurus') loadDataGuru(true);
+        if (coll === 'mapels') loadDataMapel(true);
+        if (coll === 'jadwals') loadDataJadwal(true);
+        if (coll === 'absensis') loadDataAbsensi(true);
       }
     };
   </script>
