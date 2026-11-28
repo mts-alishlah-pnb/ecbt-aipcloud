@@ -1394,41 +1394,113 @@
       const filterKelas = document.getElementById('filterAbsensiKelas').value;
       const filterRuangan = document.getElementById('filterAbsensiRuangan').value;
 
-      const absensiList = await getCachedCollection('absensis');
-      if (absensiList.length === 0) {
-        alert("Tidak ada data absensi untuk diexport.");
+      const [absensiList, siswaList, jadwalList] = await Promise.all([
+        getCachedCollection('absensis'),
+        getCachedCollection('siswas'),
+        getCachedCollection('jadwals')
+      ]);
+
+      if (absensiList.length === 0 && siswaList.length === 0) {
+        alert("Tidak ada data absensi atau data siswa untuk diexport.");
         return;
       }
 
-      let exportData = [];
-      absensiList.forEach(item => {
+      // Filter absensi sesuai dropdown aktif
+      const hadirFiltered = absensiList.filter(item => {
         const matchMapel = (filterMapel === 'ALL' || item.mataPelajaran === filterMapel);
         const matchKelas = (filterKelas === 'ALL' || item.kelas === filterKelas);
         const matchRuangan = (filterRuangan === 'ALL' || item.ruangan === filterRuangan);
+        return matchMapel && matchKelas && matchRuangan;
+      });
 
-        if (matchMapel && matchKelas && matchRuangan) {
-          exportData.push({
-            "Waktu Login": item.waktuLogin || "",
-            "NAMA PESERTA UJIAN": item.namaPeserta || "",
-            "KELAS": item.kelas || "",
-            "RUANGAN UJIAN": item.ruangan || "",
-            "NOMOR PESERTA UJIAN": item.nomorPeserta || "",
-            "HARI": item.hari || "",
-            "TANGGAL": item.tanggal || "",
-            "MATA PELAJARAN": item.mataPelajaran || ""
+      // Tentukan target tingkat jika mapel spesifik dipilih
+      const targetTingkatList = [];
+      if (filterMapel !== 'ALL') {
+        jadwalList
+          .filter(j => j.mapel === filterMapel && j.tingkat && j.tingkat !== 'Semua Kelas')
+          .forEach(j => {
+            if (!targetTingkatList.includes(j.tingkat)) {
+              targetTingkatList.push(j.tingkat);
+            }
+          });
+      }
+
+      // Filter siswa keseluruhan berdasarkan Kelas, Ruangan, dan Target Tingkat Mapel (jika ada)
+      const pesertaKeseluruhan = siswaList.filter(s => {
+        const matchKelas = (filterKelas === 'ALL' || s.kelas === filterKelas);
+        const matchRuangan = (filterRuangan === 'ALL' || (s.ruangan || '-') === filterRuangan || (filterRuangan === '-' && !s.ruangan));
+        const matchTingkatMapel = (targetTingkatList.length === 0 || targetTingkatList.includes(s.kelas));
+        return matchKelas && matchRuangan && matchTingkatMapel;
+      });
+
+      // Kumpulkan identitas siswa yang sudah hadir (berdasarkan username/nomorPeserta atau nama+kelas)
+      const hadirKeys = new Set();
+      hadirFiltered.forEach(item => {
+        if (item.nomorPeserta) hadirKeys.add(`id:${String(item.nomorPeserta).trim().toLowerCase()}`);
+        if (item.namaPeserta) hadirKeys.add(`nk:${String(item.namaPeserta).trim().toLowerCase()}|${String(item.kelas || '').trim().toLowerCase()}`);
+      });
+
+      // Daftar siswa tidak hadir (nama, kelas, ruangan)
+      const tidakHadirRows = [];
+      pesertaKeseluruhan.forEach(s => {
+        const byId = s.username ? hadirKeys.has(`id:${String(s.username).trim().toLowerCase()}`) : false;
+        const byNk = hadirKeys.has(`nk:${String(s.nama || '').trim().toLowerCase()}|${String(s.kelas || '').trim().toLowerCase()}`);
+        if (!byId && !byNk) {
+          tidakHadirRows.push({
+            "NAMA PESERTA UJIAN": s.nama || "",
+            "KELAS": s.kelas || "",
+            "RUANGAN UJIAN": s.ruangan || "-"
           });
         }
       });
 
-      if (exportData.length === 0) {
-        alert("Tidak ada data yang cocok dengan filter saat ini.");
-        return;
-      }
+      // Susun data Sheet Daftar_Hadir (tanpa kolom Nomor Peserta Ujian)
+      const daftarHadirRows = hadirFiltered.map(item => ({
+        "Waktu Login": item.waktuLogin || "",
+        "NAMA PESERTA UJIAN": item.namaPeserta || "",
+        "KELAS": item.kelas || "",
+        "RUANGAN UJIAN": item.ruangan || "",
+        "HARI": item.hari || "",
+        "TANGGAL": item.tanggal || "",
+        "MATA PELAJARAN": item.mataPelajaran || ""
+      }));
 
-      const ws = XLSX.utils.json_to_sheet(exportData);
+      const totalKeseluruhan = pesertaKeseluruhan.length;
+      const totalHadir = daftarHadirRows.length;
+      const totalTidakHadir = tidakHadirRows.length;
+
+      const wsDaftarHadir = XLSX.utils.json_to_sheet(daftarHadirRows, {
+        header: [
+          "Waktu Login",
+          "NAMA PESERTA UJIAN",
+          "KELAS",
+          "RUANGAN UJIAN",
+          "HARI",
+          "TANGGAL",
+          "MATA PELAJARAN"
+        ]
+      });
+
+      // Tambahkan baris rekap di bagian bawah setelah 1 baris kosong
+      const startSummaryRow = daftarHadirRows.length + 3; // +1 header, +1 baris kosong
+      XLSX.utils.sheet_add_aoa(wsDaftarHadir, [
+        ["Jumlah Peserta Keseluruhan", null, null, `: ${totalKeseluruhan} Siswa`],
+        ["Jumlah Peserta Hadir", null, null, `: ${totalHadir} Siswa`],
+        ["Jumlah Peserta Tidak Hadir", null, null, `: ${totalTidakHadir} Siswa`]
+      ], { origin: `A${startSummaryRow}` });
+
+      const wsTidakHadir = XLSX.utils.json_to_sheet(tidakHadirRows, {
+        header: ["NAMA PESERTA UJIAN", "KELAS", "RUANGAN UJIAN"]
+      });
+
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Daftar_Hadir");
-      XLSX.writeFile(wb, `Rekap_Absensi_${filterMapel}_${filterKelas}_${filterRuangan}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, wsDaftarHadir, "Daftar_Hadir");
+      XLSX.utils.book_append_sheet(wb, wsTidakHadir, "Tidak Hadir");
+
+      const safeMapel = String(filterMapel).replace(/[^a-zA-Z0-9_-]/g, "_");
+      const safeKelas = String(filterKelas).replace(/[^a-zA-Z0-9_-]/g, "_");
+      const safeRuangan = String(filterRuangan).replace(/[^a-zA-Z0-9_-]/g, "_");
+      XLSX.writeFile(wb, `Rekap_Absensi_${safeMapel}_${safeKelas}_${safeRuangan}.xlsx`);
     };
 
     // --- UTILITY DELETE & CLEAR ALL ---
